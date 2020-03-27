@@ -2,9 +2,9 @@
 /*********************************************************
  Base Arduino Code for implementing a Digital Controller
  University of Technology Sydney (UTS)
- Board: MKR1000
+ Board: Teensy 3.2/3.6
  Based: bAC18
- Code:  v1
+ Code:  v4
 
  Created by Ricardo P. Aguiilera, 
             Manh (Danny) Duong Phung,
@@ -20,11 +20,11 @@
     PWM_MKR1000_AdvCtrl_UTS
  *******************************************************/
 
-#include <Timer5.h>
-#include <PWM_MKR1000_AdvCtrl_UTS.h>
+IntervalTimer myTimer;
 
 
 #define fs 200 //Sampling frequency [Hz] , Ts = 1/fs [s]
+#define DAC_GAIN (4095/3.3)   // 12bit DAC to 3.3V
 
 // Control Effort
 float u_k;    // u[k]
@@ -107,17 +107,9 @@ void setup()
     analogReadResolution(res); //If commented, default resolution is 10bits
 
    
-  // Configure PWM for outputs
-    init_PWM_MKR1000_UTS();
-  
-  // define timer5 interruption freq (sampling time)
-    MyTimer5.begin(fs);   //Argument is freq in Hz
-
-  // define the interrupt callback function
-    MyTimer5.attachInterrupt(Controller);
-  
-  // start the timer
-    MyTimer5.start();   //Always start timer at the end
+  // Create an IntervalTimer object 
+    int Ts_m = (int)(Ts*1000000);   // Must multiply Ts by 1000000!
+    myTimer.begin(Controller, Ts_m); 
     
 }
 
@@ -185,10 +177,8 @@ Board Outputs
     //individual output in serial monitor
      
   //write_outx(value, offset, gain, disp) 
-    write_out1(out1,  0,  1, 0);      // Pin 5  -12V to 12V
-    write_out2(out2,  0,  1, 0);      // Pin 4  -12V to 12V
-    write_out3(out3,  0,  1, 0);      // Pin 7    0V to 12V
-    write_out4(out4,  0,  1, 0);      // Pin 6    0V to 12V
+    write_out1(out1,  0,  1, 0);      // DAC0 Pin A22
+    write_out2(out2,  0,  1, 0);      // DAC1 Pin A21
 
     // disp_outputs_all();
     // Only display outputs for calibration. 
@@ -208,7 +198,7 @@ Board Outputs
 //___________________________________________________________________________
 void loop()
 { 
-  disp_inputs_all();
+
 
 }
 
@@ -249,12 +239,7 @@ void loop()
       Serial.print("Out2: ");
       Serial.print(out2);
       Serial.print(" [V]  ");
-      Serial.print("Out3: ");
-      Serial.print(out3);
-      Serial.print(" [V]  ");
-      Serial.print("Out4: ");
-      Serial.print(out4);
-      Serial.println(" [V]");
+
 }
 
 
@@ -269,10 +254,14 @@ void loop()
 float read_input1(float offset, float gain, int disp)
 {
   float in_float = 0;
-  int in = analogRead(A1); // Read raw input 1 (0 –> 12V)
   
-  in_float = (float)(in);
+  // read ADC and write to ADC_raw
+  pinMode(A12, INPUT);
+  int ADC_raw = analogRead(A12); // Read input 1 (0 –> 12V)
 
+  in_float = (float)(ADC_raw);
+
+  // convert ADC_raw to voltage
   //  Here, you must enter the experimental linear relationship
   //  between the raw bits and the actual voltage.
   //  acutal voltage = in_float*m +/- 
@@ -285,7 +274,7 @@ float read_input1(float offset, float gain, int disp)
   if (disp == 1)
   {
     Serial.print("In1: ");
-    Serial.print(in1);
+    Serial.print(in_float);
     Serial.println(" [V]");
   }
   
@@ -296,25 +285,30 @@ float read_input1(float offset, float gain, int disp)
 float read_input2(float offset, float gain, int disp)
 {
   float in_float = 0;
-  int in = analogRead(A2); // Read input 2 (0 –> 12V)
   
-  in_float = (float)(in);
+  // read ADC and write to ADC_raw
+  pinMode(A13, INPUT);
+  int ADC_raw = analogRead(A13); // Read input 2 (0 –> 12V)
 
+  in_float = (float)(ADC_raw);
+
+  // convert ADC_raw to voltage
   //  Here, you must enter the experimental linear relationship
   //  between the raw bits and the actual voltage.
+  //  acutal voltage = in_float*m +/- 
   float p1 = 0;
   float p2 = 0;
   in_float = in_float*p1 + p2;
 
   in_float = (in_float + offset)*gain;
 
-    if (disp == 1)
-    {
-      Serial.print("In2: ");
-      Serial.print(in2);
-      Serial.println(" [V]");
-    }
-
+  if (disp == 1)
+  {
+    Serial.print("In1: ");
+    Serial.print(in_float);
+    Serial.println(" [V]");
+  }
+  
   return in_float; 
 }
 
@@ -322,82 +316,104 @@ float read_input2(float offset, float gain, int disp)
 float read_input3(float offset, float gain, int disp)
 {
   float in_float = 0;
-  int in = analogRead(A5); // Read input 3 (0 -> +/-12)
-
-  in_float = (float)(in);
-
-  //  Here, you must enter the experimental linear relationship
-  //  between the raw bits and the actual voltage.
-  float p1 =  0;
-  float p2 =  0;
-  in_float = in_float*p1 + p2;
-
-  in_float = (in_float+ offset)*gain;
   
-  if (disp == 1)
-  {
-    Serial.print("In3: ");
-    Serial.print(in3);
-    Serial.println(" [V]");
-  }
+  // read ADC and write to ADC_raw
+  pinMode(A14,INPUT);
+  int ADC_raw  = analogRead(A14); // Read input 3 (0 -> +/-12)
 
-  return in_float; 
-}
+  in_float = (float)(ADC_raw);
 
-
-float read_input4(float offset, float gain, int disp) {
-  float in_float = 0;
-  int in = analogRead(A6); // Read input 4 (0 -> +/-12)
-
-  in_float = (float)(in);
-
+  // convert ADC_raw to voltage
   //  Here, you must enter the experimental linear relationship
   //  between the raw bits and the actual voltage.
-  float p1 =  0;
-  float p2 =  0;
+  //  acutal voltage = in_float*m +/- 
+  float p1 = 0;
+  float p2 = 0;
   in_float = in_float*p1 + p2;
 
   in_float = (in_float + offset)*gain;
 
-    if (disp == 1) {
-      Serial.print("In4: ");
-      Serial.print(in4);
-      Serial.println(" [V]");
+  if (disp == 1)
+  {
+    Serial.print("In1: ");
+    Serial.print(in_float);
+    Serial.println(" [V]");
   }
   
- return in_float;
+  return in_float; 
+}
+
+
+float read_input4(float offset, float gain, int disp)
+{
+  float in_float = 0;
+  
+  // read ADC and write to ADC_raw
+  pinMode(A15,INPUT);
+  int ADC_raw  = analogRead(A15); // Read input 4 (0 -> +/-12)
+
+  in_float = (float)(ADC_raw);
+
+  // convert ADC_raw to voltage
+  //  Here, you must enter the experimental linear relationship
+  //  between the raw bits and the actual voltage.
+  //  acutal voltage = in_float*m +/- 
+  float p1 = 0;
+  float p2 = 0;
+  in_float = in_float*p1 + p2;
+
+  in_float = (in_float + offset)*gain;
+
+  if (disp == 1)
+  {
+    Serial.print("In1: ");
+    Serial.print(in_float);
+    Serial.println(" [V]");
+  }
+  
+  return in_float;
 }
 
 //___________________________________________________________________________
 //                              write_outx
 //
 //        Given a desired output value, it will scale this to an output
-//        value for PWM generation.
+//        value for DAC.
 //        The raw bits must be scaled!
 //___________________________________________________________________________
 void write_out1(float out, float offset, float gain, int disp)
 {
-  float d;  // Pin 4
+  // Initialize DAC0
+  pinMode(A21,OUTPUT); 
+  analogWriteResolution(12);
 
+  // Scale requested voltage to 0 < DAC_v < 3.3
   //  Here, you must enter the experimental linear relationship
-  //  between the requested and actual voltage.
+  //  between the raw bits and the actual voltage.
+  //  DAC_v = out*p1 +/- p2
   float p1 = 0;
   float p2 = 0;
-  d = out*p1 + p2;
+  float DAC_v = out*p1 + p2;
+    
 
-  d = (d + offset)*gain;
+  // Convert D to A
+  int DAC_raw = (int)( (DAC_v*DAC_GAIN + offset)*gain );
 
-  if (d < 0)
+  //.:: DO NOT CHANGE! ::.
+  // Limit to 3.3V and scale to 1.6  
+  if (DAC_raw > 4095)
   {
-    d = 0;
+    DAC_raw = 2048;
   }
 
-  REG_TCC0_CCB2 = (int)((REG_TCC0_PER + 1)*d); 
-    
-  if (disp==1)
+  // Write to output
+  analogWrite(A21, DAC_raw);
+
+  // Serial Montior/Plotter
+  if (disp == 1)
   {
-    Serial.print("Out2 : ");
-    Serial.print(out2);
+    Serial.print("Out1 : ");
+    Serial.print(out, 10);
     Serial.println(" [V]");
   }
 
@@ -406,107 +422,36 @@ void write_out1(float out, float offset, float gain, int disp)
 
 void write_out2(float out, float offset, float gain, int disp)
 {
-  float d = 0;  // Pin 5
+  // Initialize DAC1
+  pinMode(A22,OUTPUT); 
+  analogWriteResolution(12);
 
+  // Scale requested voltage to 0 < DAC_v < 3.3
   //  Here, you must enter the experimental linear relationship
-  //  between the requested and actual voltage.
+  //  between the raw bits and the actual voltage.
+  //  DAC_v = out*p1 +/- p2
   float p1 = 0;
   float p2 = 0;
-  d = out*p1 + p2;
-
-  d = (d + offset)*gain;
-
-  if (d < 0)
-  {
-    d = 0;
-  }
-
-  REG_TCC0_CCB3= (int)( (REG_TCC0_PER + 1)*d); 
-
-  if (disp == 1)
-  {
-    Serial.print("Out1 : ");
-    Serial.print(out1);
-    Serial.println(" [V]");
-  }
-}
-
-
-void write_out3(float out, float offset, float gain, int disp)
-{
-  float d;  // Pin 6
-
-  //  Here, you must enter the experimental linear relationship
-  //  between the requested and actual voltage.
-  float p1 = 0;
-  float p2 = 0;
-  d = out*p1 + p2;
-
-  d = (d + offset)*gain;
-
-  if (d < 0)
-  {
-    d = 0;
-  }
-
-  REG_TCC0_CCB0 = (int)((REG_TCC0_PER+1)*d); 
+  float DAC_v = out*p1 + p2;
     
-  if (disp == 1)
+
+  // Convert D to A
+  int DAC_raw = (int)( (DAC_v*DAC_GAIN + offset)*gain );
+
+  //.:: DO NOT CHANGE! ::.
+  // Limit to 3.3V and scale to 1.6  
+  if (DAC_raw > 4095)
   {
-    Serial.print("Out4 : ");
-    Serial.print(out4);
+    DAC_raw = 2048;
+  }
+
+  // Write to output
+  analogWrite(A22, DAC_raw);
+
+  // Serial Montior/Plotter
+  if (disp == 1) {
+    Serial.print("Out1 : ");
+    Serial.print(out, 10);
     Serial.println(" [V]");
   }
- 
 }
-
-void write_out4(float out, float offset, float gain, int disp)
-{
-  float d;  // Pin 7
-
-  //  Here, you must enter the experimental linear relationship
-  //  between the requested and actual voltage.
-  //  d = in_out*m +/- b
-  float p1 = 0;
-  float p2 = 0;
-  d = out*p1 + p2;
-
-  d = (d + offset)*gain;
-
-  if (d < 0)
-  {
-    d = 0;
-  }
-
-  REG_TCC0_CCB1 = (int)((REG_TCC0_PER+1)*d);
-
-  if (disp == 1)
-  {
-    Serial.print("Out3 : ");
-    Serial.print(out3);
-    Serial.println(" [V]");
-  }
-
-}
-
-
-/*PWM Explanation
-The sawtooth carrier incrases from 0 to Tmax
-
-Tmax = REG_TCC0_PER + 1
-
-Tmax    _____________________
-             /|     /|     /|
-            / |    / |----/-|
-CMP_i   ---/--|   /  |   /  |
-          /   |  /   |  /   |
-         /    |-/----| /    |
-    0   /     |/     |/     └───────> t
-       |      |      |      |
-       |      |      |      |
-PWM i Output  |      |      |
-       ┌──┐   ┌┐     ┌────┐ 
-       │  │   ││     │    │ 
-       │  │   ││     │    │ 
-       ┘  └───┘└─────┘    └───────> t
-*/
