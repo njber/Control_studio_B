@@ -12,6 +12,18 @@ xo=[-1 1]';        % Initial System State Condition
 
 Ts=1/fs;            % Sampling Period
 
+%% Model Constant Parameters
+I1 = 8*exp(-4);
+I2 = I1;
+m = 0.35;
+r = 0.03;
+k = 50;
+k0 = 200;
+b1 = 0.09;
+b0 = 0.5;
+%let cos(alpha) = a
+a = sqrt(2)/3;
+
 %% Continuous-Time Linear State-Space Model
 % x_dot(t) = Ac?x(t)+Bc?x(t)
 %        y(t) = Cc?x(t)
