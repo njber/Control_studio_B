@@ -6,9 +6,9 @@ simu="PIL_Arduino_v04";     % Simulink file name
 simulate= true; % True: To simulate
 Tsim = 5 ;        % Total Simulation length in seconds. 
                         % Set Tsim=Inf to run indefinitely                            
-fs=33;              % Sampling Frequency in Hz
+fs=100;              % Sampling Frequency in Hz
 
-xo=[-1 1]';        % Initial System State Condition
+xo=[0 0 0 0 0 0]';        % Initial System State Condition
 
 Ts=1/fs;            % Sampling Period
 
@@ -20,6 +20,7 @@ r = 0.03;
 k = 50;
 k0 = 200;
 b1 = 0.09;
+b2 = 0.09;
 b0 = 0.5;
 %let cos(alpha) = a
 a = sqrt(2)/3;
@@ -28,21 +29,52 @@ a = sqrt(2)/3;
 % x_dot(t) = Ac?x(t)+Bc?x(t)
 %        y(t) = Cc?x(t)
 
-n=2;    % Number of System States
+n=6;    % Number of System States
 
-Ac=[[1 0];
-     [1 1]];
-Bc=[1 0]';
-Cc=[1 0];
+Ac=[0 1 0 0 0 0;
+    -1.25*k*r^2/I1 -b1/I1 -0.5*k*r^2/I1 0 k*a/I1 0;
+    0 0 0 1 0 0;
+    0.5*k*r^2/I2 0 -1.25*k*r^2/I2 -b2/I2 -k*a/I2 0;
+    0 0 0 0 0 1;
+    k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
+ 
+Bc=[0 1/I1 0 1/I2 0 0]';
+
+Cc=[0 1/2 0 1/2 0 0;
+    0  0  0  0  1 0];
+
 CO = ctrb(Ac,Bc);
 
-if (rank(CO)==2)
+if (rank(CO)==n)
     disp('System is Controllable')
 else 
     disp('System is NOT Controllable')
     simulate = false;
 end
 
+%% Controller Design
+sys_ct = ss(Ac, Bc, Cc, 0);
+sys_dt = c2d(sys_ct, Ts);
+
+A = sys_dt.A
+B = sys_dt.B
+C = sys_dt.C
+
+Pc = [-0.8 -1.0 -1.2 -1.4 -1.6 -1.8];
+Pz = exp(Pc*Ts);
+F=place(A, B, Pz);
+
+%% Observer Design
+OM = obsv(A, C);
+rank_OM=rank(OM);
+if (rank_OM==n)
+    disp('System is Observable')
+end
+
+POc = 5*Pc;
+POz = exp(POc*Ts);
+
+L = place(A', C', POz)';
 %% Start Simulation
 if (simulate)
     open_system(simu);

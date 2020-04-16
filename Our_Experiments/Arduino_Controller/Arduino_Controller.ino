@@ -21,9 +21,9 @@
 #define baud_rate 115200  //bits per second
 
 //Number of System States, Inputs, and Outputs
-#define n 2   //number of states 
-#define m 1   //number of inputs 
-#define p 1   //number of outputs
+#define n 6   //number of states 
+#define m 2   //number of inputs 
+#define p 2   //number of outputs
 
 /*****************************
    Global Variables
@@ -37,6 +37,7 @@ float in2 = 0;
 float in3 = 0;
 float in4 = 0;
 
+
 // Outputs from the board
 float out1 = 0;
 float out2 = 0;
@@ -47,9 +48,16 @@ float out4 = 0;
 // System Variables
 BLA::Matrix<n,1> x_k;  // u(k) \in R^n
 BLA::Matrix<m,1> u_k;  // u(k) \in R^m
+BLA::Matrix<p,1> y_k;
 
 // State Feedback Controller
-BLA::Matrix<m,n> K;
+BLA::Matrix<m,n> F;
+BLA::Matrix<n,p> L;
+
+// Discretised Plant
+BLA::Matrix<n,n> A;
+BLA::Matrix<n,1> B;
+BLA::Matrix<p,n> C;
 
 
 //___________________________________________________________________________
@@ -62,7 +70,32 @@ void setup() {
   Serial.begin(baud_rate); // opens serial port, sets data rate
 
   // State Feedback Gain
-  K << 23.9539,   52.1018; 
+  F << 1000, 1000, 1000, 1000, 1000, 1000,
+       -1.9656, -0.0375, 1.9678, 0.0376, -6.2614, -0.1407;
+
+  L << -1.2544,0.0899,
+       -0.4060, 1.8499,
+       -0.8071, -0.0587,
+        0.6432, -1.8495,
+       -0.3119, 0.2452,
+       -5.2473, 3.3310;
+
+  A << 1.0000,    0.0100,   -0.0000,   -0.0000,    0.0080,    0.0000,
+      -0.0020,    0.9939,   -0.0033,   -0.0000,    1.6073,    0.0080,
+       0.0000,    0.0000,    1.0000,    0.0100,   -0.0080,   -0.0000,
+      -0.0003,    0.0000,   -0.0020,    0.9939,   -1.6073,   -0.0080,
+       0.0034,    0.0000,   -0.0034,   -0.0000,    1.0068,    0.0100,
+       0.6702,    0.0033,   -0.6702,   -0.0033,    1.3621,    0.9926;
+
+  B << 0.0003,
+       0.0680,
+       0.0003,
+       0.0680,
+      -0.0000,
+      -0.0000;
+
+  C << 0,    0.5000,         0,    0.5000,         0,         0,
+       0,         0,         0,         0,    1.0000,         0;
 }
 
 
@@ -91,17 +124,29 @@ void Controller() {
   read_Simulink();  
   
   // Associate board inputs to states
-  x_k(0)=in1;
-  x_k(1)=in2;
+//  x_k(1)=in1;
+//  x_k(3)=in2;
+//  x_k(4)=in3;
+//  x_k(5)=in4;
+  // Go off just the outputs
+  y_k(0) = in1; // pully speed
+  y_k(1) = in2; // tension
+
+  static BLA::Matrix<n,1> x_hat_k; //TODO: maybe initialise
+  x_k = x_hat_k;
+  
 
   //State Feedback Controller
-  u_k = -K*x_k;
+  u_k = -F*x_k; //TODO: add r
+
+  //Update estimated states
+  x_hat_k = A*x_k +B*1 + L*(y_k - C*x_k);
 
   // Associate board outputs to system inputs to be applied
-  out1 = u_k(0);
-  out1 = saturate(out1,-10,10);
 
-  out2 = 2;
+  out1 = saturate(u_k(0),-10,10);
+  out2 = saturate(u_k(1),-10,10);
+
   out3 = 3;
   out4 = 4;
 
@@ -113,7 +158,7 @@ void Controller() {
 // Communication Functions
 //___________________________________________________________________________
 //
-//                Communication Functios
+//                Communication Functions
 //
 //    Make possible to interchange data between Simulink and Arduino
 //___________________________________________________________________________
