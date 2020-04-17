@@ -140,7 +140,7 @@ void Controller() {
   u_k = -F*x_k; //TODO: add r
 
   //Update estimated states
-  x_hat_k = A*x_k +B*1 + L*(y_k - C*x_k);
+  //x_hat_k = A*x_k +B*u_k + L*(y_k - C*x_k);
 
   // Associate board outputs to system inputs to be applied
 
