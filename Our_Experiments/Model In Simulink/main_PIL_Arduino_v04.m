@@ -38,7 +38,12 @@ Ac=[0 1 0 0 0 0;
     0 0 0 0 0 1;
     k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
  
-Bc=[0 1/I1 0 1/I2 0 0]';
+Bc=[0 0;
+    1/I1 0;
+    0 0;
+    0 1/I2;
+    0 0;
+    0 0];
 
 Cc=[0 1/2 0 1/2 0 0;
     0  0  0  0  1 0];
@@ -62,7 +67,7 @@ C = sys_dt.C
 
 Pc = [-0.8 -1.0 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
-F=place(A, B, Pz);
+F=place(A, B, Pz)
 
 %% Observer Design
 OM = obsv(A, C);
@@ -74,7 +79,7 @@ end
 POc = 5*Pc;
 POz = exp(POc*Ts);
 
-L = place(A', C', POz)';
+L = place(A', C', POz)'
 %% Start Simulation
 if (simulate)
     open_system(simu);
