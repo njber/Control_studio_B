@@ -6,13 +6,14 @@ simu="PIL_Arduino_v04";     % Simulink file name
 simulate= true; % True: To simulate
 Tsim = 5 ;        % Total Simulation length in seconds. 
                         % Set Tsim=Inf to run indefinitely                            
-fs=100;              % Sampling Frequency in Hz
+fs=50;              % Sampling Frequency in Hz
 
 xo=[0 0 0 0 0 0]';        % Initial System State Condition
 
 Ts=1/fs;            % Sampling Period
 
 matlabController = 1; % else use Arduino controller
+obs = 0;
 
 %% Initial Condition
 x_o = [0 0 0 0 0 0]';                  %cart position 
@@ -21,7 +22,7 @@ th_o = 0.1;                 %pendulum angle from vertical (up)
 w_o = 0;                    %angular speed of the pendulum
 
 xo = [0 0 0 0 0 0]'; %State initial condition
-xo_hat=[0 0 0 0 0 0]'          %Observer initial condition
+xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 
 %% Model Constant Parameters
 I1 = 8*exp(-4);
@@ -35,6 +36,7 @@ b2 = 0.09;
 b0 = 0.5;
 %let cos(alpha) = a
 a = sqrt(2)/3;
+G = 300; %amplifier/motor voltage to torque gain.
 
 %% Continuous-Time Linear State-Space Model
 % x_dot(t) = Ac?x(t)+Bc?x(t)
@@ -48,6 +50,7 @@ Ac=[0 1 0 0 0 0;
     0.5*k*r^2/I2 0 -1.25*k*r^2/I2 -b2/I2 -k*a/I2 0;
     0 0 0 0 0 1;
     k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
+eigAC = eig(Ac)
  
 Bc=[0 0;
     1/I1 0;
@@ -72,13 +75,15 @@ end
 sys_ct = ss(Ac, Bc, Cc, 0);
 sys_dt = c2d(sys_ct, Ts);
 
-A = sys_dt.A
-B = sys_dt.B
-C = sys_dt.C
+A = sys_dt.A;
+B = sys_dt.B;
+C = sys_dt.C;
 
 Pc = [-0.8 -1.0 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
-F=place(A, B, Pz)
+F=place(A, B, Pz);
+
+eigAF = eig(A-B*F);
 
 %% Observer Design
 OM = obsv(A, C);
@@ -90,7 +95,7 @@ end
 POc = 5*Pc;
 POz = exp(POc*Ts);
 
-L = place(A', C', POz)'
+L = place(A', C', POz)';
 %% Start Simulation
 if (simulate)
     open_system(simu);
@@ -98,11 +103,12 @@ if (simulate)
     sim(simu)
     disp('Plotting...')
     
-    x1=in(:,1);
-    x2=in(:,2);
-    u1=out(:,1);
+%     x1=x(:,1);
+%     x2=x(:,2);
+%     u1=u(:,1);
+%     u2=u(:,2);
     save('result_data.mat')
-    %plot_results;
+    plot_results;
     disp('Done!!!')
     
 end
