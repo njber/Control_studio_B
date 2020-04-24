@@ -12,6 +12,17 @@ xo=[0 0 0 0 0 0]';        % Initial System State Condition
 
 Ts=1/fs;            % Sampling Period
 
+matlabController = 1; % else use Arduino controller
+
+%% Initial Condition
+x_o = [0 0 0 0 0 0]';                  %cart position 
+xsp_o = 0;                  %cart speed
+th_o = 0.1;                 %pendulum angle from vertical (up)
+w_o = 0;                    %angular speed of the pendulum
+
+xo = [0 0 0 0 0 0]'; %State initial condition
+xo_hat=[0 0 0 0 0 0]'          %Observer initial condition
+
 %% Model Constant Parameters
 I1 = 8*exp(-4);
 I2 = I1;
@@ -91,7 +102,7 @@ if (simulate)
     x2=in(:,2);
     u1=out(:,1);
     save('result_data.mat')
-    plot_results;
+    %plot_results;
     disp('Done!!!')
     
 end

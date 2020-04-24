@@ -46,7 +46,7 @@ float out4 = 0;
 
 
 // System Variables
-BLA::Matrix<n,1> x_k;  // u(k) \in R^n
+BLA::Matrix<n,1> x_hat;  // u(k) \in R^n
 BLA::Matrix<m,1> u_k;  // u(k) \in R^m
 BLA::Matrix<p,1> y_k;
 
@@ -133,14 +133,14 @@ void Controller() {
   y_k(1) = in2; // tension
 
   static BLA::Matrix<n,1> x_hat_k; //TODO: maybe initialise
-  x_k = x_hat_k;
+  x_hat = x_hat_k;
   
 
   //State Feedback Controller
-  u_k = -F*x_k + 0.1; //TODO: add r
+  u_k = -F*x_hat + 0.1; //TODO: add r
 
   //Update estimated states
-  x_hat_k = A*x_k +B*u_k + L*(y_k - C*x_k);
+  x_hat_k = A*x_hat +B*u_k + L*(y_k - C*x_hat);
 
   // Associate board outputs to system inputs to be applied
 
