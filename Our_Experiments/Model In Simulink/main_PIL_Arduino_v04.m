@@ -4,9 +4,9 @@ simu="PIL_Arduino_v04";     % Simulink file name
 
 %% Simulation Settings
 simulate= true; % True: To simulate
-Tsim = 5 ;        % Total Simulation length in seconds. 
+Tsim = 20 ;        % Total Simulation length in seconds. 
                         % Set Tsim=Inf to run indefinitely                            
-fs=50;              % Sampling Frequency in Hz
+fs=500;              % Sampling Frequency in Hz
 
 xo=[0 0 0 0 0 0]';        % Initial System State Condition
 
@@ -79,7 +79,7 @@ A = sys_dt.A;
 B = sys_dt.B;
 C = sys_dt.C;
 
-Pc = [-0.8 -1.0 -1.2 -1.4 -1.6 -1.8];
+Pc = [-0.5 -0.8 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz);
 
