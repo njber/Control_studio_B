@@ -4,16 +4,16 @@ simu="PIL_Arduino_v04";     % Simulink file name
 
 %% Simulation Settings
 simulate= true; % True: To simulate
-Tsim = 20 ;        % Total Simulation length in seconds. 
+Tsim = 10 ;        % Total Simulation length in seconds. 
                         % Set Tsim=Inf to run indefinitely                            
-fs=500;              % Sampling Frequency in Hz
+fs=100;              % Sampling Frequency in Hz
 
 xo=[0 0 0 0 0 0]';        % Initial System State Condition
 
 Ts=1/fs;            % Sampling Period
 
 matlabController = 1; % else use Arduino controller
-obs = 0;
+obs = 1;
 
 %% Initial Condition
 x_o = [0 0 0 0 0 0]';                  %cart position 
