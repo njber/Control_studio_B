@@ -4,7 +4,7 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true; % True: To simulate
-Tsim = 10 ;        % Total Simulation length in seconds. 
+Tsim = 10;        % Total Simulation length in seconds. 
                         % Set Tsim=Inf to run indefinitely                            
 fs=100;              % Sampling Frequency in Hz
 
@@ -35,8 +35,8 @@ m = 0.35;
 r = 0.03;
 k = 50;
 k0 = 200;
-b1 = 0.09;
-b2 = 0.09;
+b1 = 0.9;
+b2 = 0.9;
 b0 = 0.5;
 %let cos(alpha) = a
 a = sqrt(2)/3;
@@ -84,7 +84,7 @@ A = sys_dt.A;
 B = sys_dt.B;
 C = sys_dt.C;
 
-Pc = [-0.5 -0.8 -1.2 -1.4 -1.6 -1.8];
+Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz);
 
