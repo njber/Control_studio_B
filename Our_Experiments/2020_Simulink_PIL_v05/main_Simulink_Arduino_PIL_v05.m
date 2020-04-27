@@ -50,12 +50,16 @@ y = 0.4;
 
 n=6;    % Number of System States
 
+%Liam's A matrix
 Ac=[0 1 0 0 0 0;
     -1.25*k*r^2/I1 -b1/I1 -0.5*k*r^2/I1 0 k*a/I1 0;
     0 0 0 1 0 0;
     0.5*k*r^2/I2 0 -1.25*k*r^2/I2 -b2/I2 -k*a/I2 0;
     0 0 0 0 0 1;
     k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
+
+%Nicks A matrix
+
 eigAC = eig(Ac)
  
 Bc=[0 0;
