@@ -12,6 +12,7 @@ xo=[0 0 0 0 0 0]';        % Initial System State Condition
 
 Ts=1/fs;            % Sampling Period
 
+linear = 1;
 matlabController = 1; % else use Arduino controller
 obs = 0;
 PIL=0;          %0: Manually start the PIL controller 
@@ -35,8 +36,8 @@ m = 0.35;
 r = 0.03;
 k = 50;
 k0 = 200;
-b1 = 0.9;
-b2 = 0.9;
+b1 = 0.09;
+b2 = 0.09;
 b0 = 0.5;
 %let cos(alpha) = a
 a = sqrt(2)/3;
@@ -84,7 +85,7 @@ A = sys_dt.A;
 B = sys_dt.B;
 C = sys_dt.C;
 
-Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8];
+Pc = [-0.4 -0.5 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz);
 
