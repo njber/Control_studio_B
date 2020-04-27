@@ -41,6 +41,7 @@ b0 = 0.5;
 %let cos(alpha) = a
 a = sqrt(2)/3;
 G = 300; %amplifier/motor voltage to torque gain.
+y = 0.4
 
 %% Continuous-Time Linear State-Space Model
 % x_dot(t) = Ac?x(t)+Bc?x(t)
