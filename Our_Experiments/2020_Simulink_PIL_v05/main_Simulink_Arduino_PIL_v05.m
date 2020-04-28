@@ -30,17 +30,15 @@ xo = [0 0 0 0 0 0]'; %State initial condition
 xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 
 %% Model Constant Parameters
-I1 = 8*exp(-4);
-I2 = I1;
+I = 8*exp(-4);
 m = 0.35;
 r = 0.03;
 k = 50;
 k0 = 200;
-b1 = 0.09;
-b2 = 0.09;
+b = 0.09;
 b0 = 0.5;
 %let cos(alpha) = a
-a = sqrt(2)/3;
+a = 0.866; %sqrt(3)/2;
 G = 300; %amplifier/motor voltage to torque gain.
 y = 0.4;
 
@@ -51,28 +49,64 @@ y = 0.4;
 n=6;    % Number of System States
 
 %Liam's A matrix
-Ac=[0 1 0 0 0 0;
-    -1.25*k*r^2/I1 -b1/I1 -0.5*k*r^2/I1 0 k*a/I1 0;
-    0 0 0 1 0 0;
-    0.5*k*r^2/I2 0 -1.25*k*r^2/I2 -b2/I2 -k*a/I2 0;
-    0 0 0 0 0 1;
-    k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
+%Ac=[0 1 0 0 0 0;
+%    -1.25*k*r^2/I1 -b1/I1 -0.5*k*r^2/I1 0 k*a/I1 0;
+%    0 0 0 1 0 0;
+%    0.5*k*r^2/I2 0 -1.25*k*r^2/I2 -b2/I2 -k*a/I2 0;
+%    0 0 0 0 0 1;
+%    k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
 
-%Nicks A matrix
-
-eigAC = eig(Ac)
+%eigAC = eig(Ac)
  
-Bc=[0 0;
-    1/I1 0;
-    0 0;
-    0 1/I2;
-    0 0;
-    0 0];
+%Bc=[0 0;
+%    1/I1 0;
+%    0 0;
+%    0 1/I2;
+%    0 0;
+%    0 0];
 
-Cc=[0 1/2 0 1/2 0 0;
-    0  0  0  0  1 0];
+%Cc=[0 1/2 0 1/2 0 0;
+%    0  0  0  0  1 0];
+
+%Ac = [-b/I 0 (r*k)/I -(r*k)/I 0 0;
+%      0 -b/I -(r*k)/I (r*k)/I 0 0;
+%      -r/(2) r/(2) 0 0 0 a/m;
+%      r r 0 0 0 0;
+%      0 0 0 0 0 1/m;
+%      0 0 2*k*a 0 -k0 -b0/m]
+%eigA = eig(Ac)
+  
+%Bc = [1/I 0;
+%      0 1/I;
+%      0 0;
+%      0 0;
+%      0 0;
+%      0 0]
+
+Ac = [-b/I 0 r*k -r*k 0 0;
+      0 -b/I -r*k r*k 0 0;
+      -r/(2*I) r/(2*r) 0 0 0 a/m;
+      r/I -r/I 0 0 0 0;
+      0 0 0 0 0 1/m;
+      0 0 2*k*a 0 -k0 -b0/m];
+eigA = eig(Ac)
+  
+Bc = [1 0;
+      0 1;
+      0 0;
+      0 0;
+      0 0;
+      0 0];
+
+
+
+  
+Cc = [1/(I*2) 1/(I*2) 0 0 0 0;
+      0 0 0 0 1 0]
+  
 
 CO = ctrb(Ac,Bc);
+rank(CO)
 
 if (rank(CO)==n)
     disp('System is Controllable')
@@ -89,11 +123,26 @@ A = sys_dt.A;
 B = sys_dt.B;
 C = sys_dt.C;
 
-Pc = [-0.4 -0.5 -1.2 -1.4 -1.6 -1.8];
+%% Poles
+os = 20;
+tsettle = 5;
+zeta = -log(1/100)\(sqrt(pi^2+log(1/100)^2));
+wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle);
+
+%Dominant second order poles
+s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
+
+%Pc = [s_poles(1) conj(s_poles(1)) 5*real(s_poles(1)) 5.2*real(s_poles(1)) 5.4*real(s_poles(1)) 5.6*real(s_poles(1))]; 
+Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/1.5; 
+%Pc = [-0.6 -0.6 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz);
 
-eigAF = eig(A-B*F);
+eigAF = eig(A-B*F)
+
+%%Just to see
+Fc = place(Ac, Bc, Pc);
+eigAFc = eig(Ac-Bc*Fc)
 
 %% Observer Design
 OM = obsv(A, C);
