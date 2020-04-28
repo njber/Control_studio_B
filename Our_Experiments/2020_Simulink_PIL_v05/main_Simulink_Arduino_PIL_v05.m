@@ -5,12 +5,10 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 %% Simulation Settings
 simulate= true; % True: To simulate
 Tsim = 10;        % Total Simulation length in seconds. 
-                        % Set Tsim=Inf to run indefinitely                            
-fs=100;              % Sampling Frequency in Hz
+                 % Set Tsim=Inf to run indefinitely                            
+fs=100;          % Sampling Frequency in Hz
 
-xo=[0 0 0 0 0 0]';        % Initial System State Condition
-
-Ts=1/fs;            % Sampling Period
+Ts=1/fs;         % Sampling Period
 
 linear = 1;
 matlabController = 1; % else use Arduino controller
@@ -26,7 +24,7 @@ xsp_o = 0;                  %cart speed
 th_o = 0.1;                 %pendulum angle from vertical (up)
 w_o = 0;                    %angular speed of the pendulum
 
-xo = [0 0 0 0 0 0]'; %State initial condition
+xo = [10 10 0 0 0 0]'; %State initial condition
 xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 
 %% Model Constant Parameters
@@ -38,7 +36,7 @@ k0 = 200;
 b = 0.09;
 b0 = 0.5;
 %let cos(alpha) = a
-a = 0.866; %sqrt(3)/2;
+a = sqrt(3)/2;
 G = 300; %amplifier/motor voltage to torque gain.
 y = 0.4;
 
@@ -48,48 +46,13 @@ y = 0.4;
 
 n=6;    % Number of System States
 
-%Liam's A matrix
-%Ac=[0 1 0 0 0 0;
-%    -1.25*k*r^2/I1 -b1/I1 -0.5*k*r^2/I1 0 k*a/I1 0;
-%    0 0 0 1 0 0;
-%    0.5*k*r^2/I2 0 -1.25*k*r^2/I2 -b2/I2 -k*a/I2 0;
-%    0 0 0 0 0 1;
-%    k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
-
-%eigAC = eig(Ac)
- 
-%Bc=[0 0;
-%    1/I1 0;
-%    0 0;
-%    0 1/I2;
-%    0 0;
-%    0 0];
-
-%Cc=[0 1/2 0 1/2 0 0;
-%    0  0  0  0  1 0];
-
-%Ac = [-b/I 0 (r*k)/I -(r*k)/I 0 0;
-%      0 -b/I -(r*k)/I (r*k)/I 0 0;
-%      -r/(2) r/(2) 0 0 0 a/m;
-%      r r 0 0 0 0;
-%      0 0 0 0 0 1/m;
-%      0 0 2*k*a 0 -k0 -b0/m]
-%eigA = eig(Ac)
-  
-%Bc = [1/I 0;
-%      0 1/I;
-%      0 0;
-%      0 0;
-%      0 0;
-%      0 0]
-
 Ac = [-b/I 0 r*k -r*k 0 0;
       0 -b/I -r*k r*k 0 0;
       -r/(2*I) r/(2*r) 0 0 0 a/m;
       r/I -r/I 0 0 0 0;
       0 0 0 0 0 1/m;
       0 0 2*k*a 0 -k0 -b0/m];
-eigA = eig(Ac)
+eigAc = eig(Ac)
   
 Bc = [1 0;
       0 1;
@@ -97,12 +60,9 @@ Bc = [1 0;
       0 0;
       0 0;
       0 0];
-
-
-
-  
-Cc = [1/(I*2) 1/(I*2) 0 0 0 0;
-      0 0 0 0 1 0]
+ 
+Cc = [1/(2*I) 1/(2*I) 0 0 0 0;
+      0 0 0 0 1 0];
   
 
 CO = ctrb(Ac,Bc);
@@ -133,7 +93,7 @@ wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle);
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
 %Pc = [s_poles(1) conj(s_poles(1)) 5*real(s_poles(1)) 5.2*real(s_poles(1)) 5.4*real(s_poles(1)) 5.6*real(s_poles(1))]; 
-Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/1.5; 
+Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/1; 
 %Pc = [-0.6 -0.6 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz);
@@ -161,11 +121,6 @@ if (simulate)
     disp('Simulating...')
     sim(simu)
     disp('Plotting...')
-    
-%     x1=x(:,1);
-%     x2=x(:,2);
-%     u1=u(:,1);
-%     u2=u(:,2);
     save('result_data.mat')
     plot_results;
     disp('Done!!!')
