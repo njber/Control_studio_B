@@ -6,17 +6,19 @@ u1 = u(:,1);
 u2 = u(:,2);
 
 w1 = x(:,1);
-w2 = x(:,2);
+w2 = x(:,3);
 
 figure(10)
 subplot(411)
 plot(time,y1,'b', 'LineWidth',2)
 grid
+title('Speed')
 legend('speed');
 
 subplot(412)
 plot(time,y2,'r', 'LineWidth',2)
 grid
+title('Tension')
 legend('tension');
 
 subplot(413)
