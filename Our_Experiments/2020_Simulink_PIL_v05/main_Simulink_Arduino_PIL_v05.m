@@ -11,21 +11,13 @@ fs=100;          % Sampling Frequency in Hz
 Ts=1/fs;         % Sampling Period
 
 linear = 1;
+closedloop = 1;
 matlabController = 1; % else use Arduino controller
 obs = 0;
 PIL=0;          %0: Manually start the PIL controller 
                 %   after simulation started
                 %1: Automatically start PIL controller 
                 %   from the beginning of the simulation
-
-%% Initial Condition
-x_o = [0 0 0 0 0 0]';                  %cart position 
-xsp_o = 0;                  %cart speed
-th_o = 0.1;                 %pendulum angle from vertical (up)
-w_o = 0;                    %angular speed of the pendulum
-
-xo = [10 10 0 0 0 0]'; %State initial condition
-xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 
 %% Model Constant Parameters
 I = 8*exp(-4);
@@ -38,7 +30,21 @@ b0 = 0.5;
 %let cos(alpha) = a
 a = sqrt(3)/2;
 G = 300; %amplifier/motor voltage to torque gain.
-y = 0.4;
+y = 0.4;                
+                
+%% Initial Condition
+w1o = 0;
+h1o = w1o*I;
+w2o = 0;
+h2o = w1o*I;
+xco = 0;
+xeo = 0;
+x1o = 0;
+po = 0;
+xo = [h1o h2o xco xeo x1o po]'; %State initial condition
+xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
+
+
 
 %% Continuous-Time Linear State-Space Model
 % x_dot(t) = Ac?x(t)+Bc?x(t)
