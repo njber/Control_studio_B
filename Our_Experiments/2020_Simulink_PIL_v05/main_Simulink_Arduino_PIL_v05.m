@@ -14,8 +14,9 @@ linear = 1;
 closedloop = 1;
 matlabController = 1; % else use Arduino controller
 
-du = 1;     %Enable input disturbace, 5*sin(2*pi*2*t)
-du_freq = pi;
+du = 0.05;     %Enable input disturbace, 5*sin(2*pi*2*t)
+du_freq_x = pi + pi/2;
+du_freq_w = pi;
 
 obs = 0;
 PIL=0;          %0: Manually start the PIL controller 
