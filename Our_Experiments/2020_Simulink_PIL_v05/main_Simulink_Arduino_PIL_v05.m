@@ -10,14 +10,20 @@ fs=500;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
-linear = 0;
+linear = 1;
 closedloop = 1;
 matlabController = 1; % else use Arduino controller
+
+du = 1;     %Enable input disturbace, 5*sin(2*pi*2*t)
+du_freq = pi;
+
 obs = 0;
 PIL=0;          %0: Manually start the PIL controller 
                 %   after simulation started
                 %1: Automatically start PIL controller 
                 %   from the beginning of the simulation
+                
+              
 
 %% Model Constant Parameters
 I = 0.0008;
