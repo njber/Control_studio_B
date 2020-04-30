@@ -4,17 +4,17 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true; % True: To simulate
-Tsim = 10;        % Total Simulation length in seconds. 
+Tsim = 3;        % Total Simulation length in seconds. 
                  % Set Tsim=Inf to run indefinitely                            
 fs=500;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
 linear = 0;
-closedloop = 0;
-matlabController = 0; % else use Arduino controller
+closedloop = 1;
+matlabController = 1; % else use Arduino controller
 obs = 0;
-PIL=1;          %0: Manually start the PIL controller 
+PIL=0;          %0: Manually start the PIL controller 
                 %   after simulation started
                 %1: Automatically start PIL controller 
                 %   from the beginning of the simulation
@@ -62,9 +62,9 @@ load('linsys.mat')
 
 Ac = linsys1.A
 Bc = linsys1.B
-Cc = linsys1.C
-%Cc = [0.5 0.5 0 0 0 0;
-%      0 0 0 0 0 -1];
+%Cc = linsys1.C
+Cc = [0.5 0.5 0 0 0 0;
+      0 0 0 0 0 1];
 
 
 CO = ctrb(Ac,Bc);
@@ -86,17 +86,17 @@ B = sys_dt.B
 C = sys_dt.C
 
 %% Poles
-os = 20;
-tsettle = 0.5;
+os = 1;
+tsettle = 2;
 zeta = -log(os/100)\(sqrt(pi^2+log(os/100)^2))
 wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
 
 %Dominant second order poles
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
-%Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]; 
-Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]*10; 
-Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*10;
+Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
+Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]*8 
+%Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*10;
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz)
 
@@ -107,7 +107,7 @@ Fc = place(Ac, Bc, Pc)
 eigAFc = eig(Ac-Bc*Fc)
 
 %% Observer Design
-OM = obsv(A, C);
+OM = obsv(Ac, Cc);
 rank_OM=rank(OM);
 if (rank_OM==n)
     disp('System is Observable')
