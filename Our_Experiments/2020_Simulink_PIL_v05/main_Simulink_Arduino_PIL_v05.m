@@ -14,9 +14,16 @@ linear = 1;
 closedloop = 1;
 matlabController = 1; % else use Arduino controller
 
-du = 0.05;     %Enable input disturbace, 5*sin(2*pi*2*t)
-du_freq_x = pi + pi/2;
-du_freq_w = pi;
+%% Input and Output Noise/Disturbance
+du1 = 0.05;     %Enable input disturbace, 5*sin(2*pi*2*t)
+du2 = 0.05
+du_freq1 = pi;
+du_offset1 = pi/2;
+du_freq2 = pi;
+du_offset2 = 0;
+
+w_noise = 0;
+x_noise = 0;
 
 obs = 0;
 PIL=0;          %0: Manually start the PIL controller 
@@ -69,9 +76,9 @@ load('linsys.mat')
 
 Ac = linsys1.A
 Bc = linsys1.B
-%Cc = linsys1.C
-Cc = [0.5 0.5 0 0 0 0;
-      0 0 0 0 0 1];
+Cc = linsys1.C
+% Cc = [0.5 0.5 0 0 0 0;
+%       0 0 0 0 0 -1];
 
 
 CO = ctrb(Ac,Bc);
