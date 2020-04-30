@@ -6,21 +6,21 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 simulate= true; % True: To simulate
 Tsim = 10;        % Total Simulation length in seconds. 
                  % Set Tsim=Inf to run indefinitely                            
-fs=50;          % Sampling Frequency in Hz
+fs=500;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
-linear = 1;
-closedloop = 1;
-matlabController = 1; % else use Arduino controller
+linear = 0;
+closedloop = 0;
+matlabController = 0; % else use Arduino controller
 obs = 0;
-PIL=0;          %0: Manually start the PIL controller 
+PIL=1;          %0: Manually start the PIL controller 
                 %   after simulation started
                 %1: Automatically start PIL controller 
                 %   from the beginning of the simulation
 
 %% Model Constant Parameters
-I = 0.146;
+I = 0.0008;
 I1 = I;
 I2 = I;
 m = 0.35;
@@ -39,13 +39,15 @@ y = 0.4;
 %% Initial Condition
 
 O1_dot_o = 0;
-O1_o = 0;
 O2_dot_o = 0;
-O2_o = 0;
 x_dot_o = 0;
+O1_o = 0;
+O2_o = 0;
 x_o = 0;
 
-xo = [O1_dot_o, O1_o, O2_dot_o, O2_o, x_dot_o, x_o]'; %State initial condition
+zo = [O1_o, O2_o, x_o]';
+z_hat_o = [O1_dot_o, O2_dot_o, x_dot_o]';
+xo = [O1_dot_o, O2_dot_o, x_dot_o, O1_o, O2_o, x_o]'; %State initial condition
 xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 
 
@@ -54,20 +56,16 @@ xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 % x_dot(t) = Ac?x(t)+Bc?x(t)
 %        y(t) = Cc?x(t)
 n = 6;
-
-Ac = [-b1*I1 -(3/2)*k*r^2*I1 0 (3/2)*k*r^2*I1 0 (sqrt(3)/2)*k*r*I1; %O1_ddot 
-    1 0 0 0 0 0; %O1_dot
-    0 (3/2)*k*r^2*I2 -b1*I2 -(3/2)*k*r^2*I2 0 -(sqrt(3)/2)*k*r*I2;%O2_ddot
-    0 0 1 0 0 0; %O2_dot
-    0 (sqrt(3)/2)*k*r*m 0 (sqrt(3)/2)*k*r*m -b0*m -m;%x_ddot
-    0 0 0 0 1 0]%x_dot
-
-Bc = [I1 0 0 0 0 0;
-    0 I2  0 0 0 0]'
   
-Cc = [1 0 0 0 0 0;
-      0 0 1 0 0 0;
-      0 0 0 0 0 1];
+
+load('linsys.mat')
+
+Ac = linsys1.A
+Bc = linsys1.B
+Cc = linsys1.C
+%Cc = [0.5 0.5 0 0 0 0;
+%      0 0 0 0 0 -1];
+
 
 CO = ctrb(Ac,Bc);
 rank(CO)
@@ -83,13 +81,13 @@ end
 sys_ct = ss(Ac, Bc, Cc, 0);
 sys_dt = c2d(sys_ct, Ts);
 
-A = sys_dt.A;
-B = sys_dt.B;
-C = sys_dt.C;
+A = sys_dt.A
+B = sys_dt.B
+C = sys_dt.C
 
 %% Poles
-os = 7;
-tsettle = 4.5;
+os = 20;
+tsettle = 0.5;
 zeta = -log(os/100)\(sqrt(pi^2+log(os/100)^2))
 wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
 
@@ -97,15 +95,15 @@ wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
 %Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]; 
-Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]; 
-%Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]/10;
+Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]*10; 
+Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*10;
 Pz = exp(Pc*Ts);
-F=place(A, B, Pz);
+F=place(A, B, Pz)
 
 eigAF = eig(A-B*F)
 
 %%Just to see
-Fc = place(Ac, Bc, Pc);
+Fc = place(Ac, Bc, Pc)
 eigAFc = eig(Ac-Bc*Fc)
 
 %% Observer Design
@@ -117,7 +115,7 @@ if (rank_OM==n)
     POc = 10*Pc;
     POz = exp(POc*Ts);
 
-    L = place(A', C', POz)';
+    L = place(A', C', POz)'
 else
     disp('System is NOT Observable')
     L = zeros(2,6);

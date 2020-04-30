@@ -137,7 +137,9 @@ void Controller() {
   
 
   //State Feedback Controller
-  u_k = -F*x_hat + 0.1; //TODO: add r
+  //u_k = -F*x_hat + 0.1; //TODO: add r
+  // Open Loop
+  u_k << 1/300, 1.5/300;
 
   //Update estimated states
   x_hat_k = A*x_hat +B*u_k + L*(y_k - C*x_hat);
