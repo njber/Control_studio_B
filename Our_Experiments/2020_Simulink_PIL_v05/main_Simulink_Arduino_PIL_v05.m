@@ -12,21 +12,21 @@ Ts=1/fs;         % Sampling Period
 
 linear = 0;
 closedloop = 1;
-matlabController = 1; % else use Arduino controller
+matlabController = 0; % else use Arduino controller
 
 %% Input and Output Noise/Disturbance
-du1 = 0.0;     %Enable input disturbace, 5*sin(2*pi*2*t)
-du2 = 0.0;
-du_freq1 = 2*pi;
+du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
+du2 = 0;
+du_freq1 = 10*pi;
 du_offset1 = pi/2;
-du_freq2 = pi;
+du_freq2 = 10*pi;
 du_offset2 = 0;
 
 w_noise = 0;
 x_noise = 0;
 
 obs = 0;
-PIL=0;          %0: Manually start the PIL controller 
+PIL=1;          %0: Manually start the PIL controller 
                 %   after simulation started
                 %1: Automatically start PIL controller 
                 %   from the beginning of the simulation
@@ -100,16 +100,17 @@ B = sys_dt.B
 C = sys_dt.C
 
 %% Poles
-os = 5;
-tsettle = 15;
-zeta = -log(os/100)\(sqrt(pi^2+log(os/100)^2))
+os = 20;
+tsettle = 5;
+zeta = log(os/100)\(sqrt(pi^2+log(os/100)^2))
 wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
 
 %Dominant second order poles
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
 Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
-%Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/10 
+% Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/5 
+% Pc = [-0.8+0.2i -0.8-0.2i -1.2 -1.4 -3.6 -3.8]*5;
 Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*10;
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz)
