@@ -4,20 +4,20 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true; % True: To simulate
-Tsim = 3;        % Total Simulation length in seconds. 
+Tsim = 5;        % Total Simulation length in seconds. 
                  % Set Tsim=Inf to run indefinitely                            
-fs=500;          % Sampling Frequency in Hz
+fs=250;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
-linear = 1;
+linear = 0;
 closedloop = 1;
 matlabController = 1; % else use Arduino controller
 
 %% Input and Output Noise/Disturbance
-du1 = 0.05;     %Enable input disturbace, 5*sin(2*pi*2*t)
-du2 = 0.05
-du_freq1 = pi;
+du1 = 0.0;     %Enable input disturbace, 5*sin(2*pi*2*t)
+du2 = 0.0;
+du_freq1 = 2*pi;
 du_offset1 = pi/2;
 du_freq2 = pi;
 du_offset2 = 0;
@@ -57,7 +57,7 @@ O2_dot_o = 0;
 x_dot_o = 0;
 O1_o = 0;
 O2_o = 0;
-x_o = 0;
+x_o = 0.0;
 
 zo = [O1_o, O2_o, x_o]';
 z_hat_o = [O1_dot_o, O2_dot_o, x_dot_o]';
@@ -78,7 +78,7 @@ Ac = linsys1.A
 Bc = linsys1.B
 Cc = linsys1.C
 % Cc = [0.5 0.5 0 0 0 0;
-%       0 0 0 0 0 -1];
+%       0 0 0 0 0 1];
 
 
 CO = ctrb(Ac,Bc);
@@ -100,8 +100,8 @@ B = sys_dt.B
 C = sys_dt.C
 
 %% Poles
-os = 1;
-tsettle = 2;
+os = 5;
+tsettle = 15;
 zeta = -log(os/100)\(sqrt(pi^2+log(os/100)^2))
 wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
 
@@ -109,8 +109,8 @@ wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
 Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
-Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]*8 
-%Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*10;
+%Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/10 
+Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*10;
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz)
 

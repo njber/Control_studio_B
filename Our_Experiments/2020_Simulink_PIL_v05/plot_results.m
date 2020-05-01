@@ -8,6 +8,14 @@ u2 = u(:,2);
 w1 = x(:,1);
 w2 = x(:,2);
 
+% Input after amplifier
+ug1 = u_gain(:,1);
+ug2 = u_gain(:,2);
+
+% Input disturbance
+dist1 = dist(:,1);
+dist2 = dist(:,2);
+
 figure(10)
 subplot(411)
 plot(time,y1,'b', 'LineWidth',2)
@@ -33,4 +41,10 @@ plot(time,w1,'b', time, w2, '--r', 'LineWidth',2)
 %axis([0 Tsim -11 11])
 title('Motor Speeds')
 legend('w1', 'w2');
+grid
+
+%% Input Disturbance
+figure(11)
+plot(time, ug1, 'r', time, ug2, 'b', time, dist1, 'g', time, dist2, 'm', 'LineWidth', 2);
+legend('u1', 'u2', 'dist1', 'dist2');
 grid
