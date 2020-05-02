@@ -4,15 +4,15 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true; % True: To simulate
-Tsim = 5;        % Total Simulation length in seconds. 
+Tsim = 3;        % Total Simulation length in seconds. 
                  % Set Tsim=Inf to run indefinitely                            
 fs=250;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
-linear = 0;
+linear = 1;
 closedloop = 1;
-matlabController = 0; % else use Arduino controller
+matlabController = 1; % else use Arduino controller
 
 %% Input and Output Noise/Disturbance
 du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
@@ -26,7 +26,7 @@ w_noise = 0;
 x_noise = 0;
 
 obs = 0;
-PIL=1;          %0: Manually start the PIL controller 
+PIL=0;          %0: Manually start the PIL controller 
                 %   after simulation started
                 %1: Automatically start PIL controller 
                 %   from the beginning of the simulation
@@ -72,15 +72,15 @@ xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 n = 6;
   
 
-load('linsys.mat')
+load('OperatingModel.mat')
 
-Ac = linsys1.A
-Bc = linsys1.B
-Cc = linsys1.C
+Ac = ss1.A
+Bc = ss1.B
+Cc = ss1.C
 % Cc = [0.5 0.5 0 0 0 0;
 %       0 0 0 0 0 1];
 
-
+eigAc = eig(Ac)
 CO = ctrb(Ac,Bc);
 rank(CO)
 
@@ -100,7 +100,7 @@ B = sys_dt.B
 C = sys_dt.C
 
 %% Poles
-os = 20;
+os = 10;
 tsettle = 5;
 zeta = log(os/100)\(sqrt(pi^2+log(os/100)^2))
 wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
@@ -111,7 +111,7 @@ s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
 % Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/5 
 % Pc = [-0.8+0.2i -0.8-0.2i -1.2 -1.4 -3.6 -3.8]*5;
-Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*10;
+Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz)
 
