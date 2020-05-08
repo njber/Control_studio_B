@@ -6,12 +6,12 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 simulate= true; % True: To simulate
 Tsim = 3;        % Total Simulation length in seconds. 
                  % Set Tsim=Inf to run indefinitely                            
-fs=250;          % Sampling Frequency in Hz
+fs=1000;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
 linear = 1;
-closedloop = 1;
+closedloop = 0;
 matlabController = 1; % else use Arduino controller
 
 %% Input and Output Noise/Disturbance
@@ -72,16 +72,39 @@ xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 n = 6;
   
 
-load('OperatingModel.mat')
+load('linsystem.mat')
 
-Ac = ss1.A
-Bc = ss1.B
-Cc = ss1.C
+A = sys.A
+B = sys.B
+C = sys.C
+
+
+
+
 % Cc = [0.5 0.5 0 0 0 0;
 %       0 0 0 0 0 1];
 
-eigAc = eig(Ac)
-CO = ctrb(Ac,Bc);
+% Ac =1.0e+03 *[-0.0010   -0.0844         0    0.0844         0    1.6238;
+%     0.0010         0         0         0         0         0;
+%          0    0.0844   -0.0010   -0.0844         0   -1.6238;
+%          0         0    0.0010         0         0         0;
+%          0    0.0037         0    0.0037   -0.0014    0.7857;
+%          0         0         0         0    0.0010         0];
+% 
+% Bc =1.0e-03 *[0.8000         0;
+%          0    0.8000;
+%          0         0;
+%          0         0;
+%          0         0;
+%          0         0];
+% 
+% 
+% Cc = [0.5 0 0.5 0 0 0;
+%       0 0 0 0 0 1];
+
+
+% eigAc = eig(Ac)
+CO = ctrb(A,B);
 rank(CO)
 
 if (rank(CO)==n)
@@ -92,12 +115,14 @@ else
 end
 
 %% Controller Design
-sys_ct = ss(Ac, Bc, Cc, 0);
-sys_dt = c2d(sys_ct, Ts);
+% sys_ct = ss(Ac, Bc, Cc, 0);
+% sys_dt = c2d(sys_ct, Ts);
+sys_dt = ss(A,B,C,0, Ts);
+sys_ct = d2c(sys_dt);
 
-A = sys_dt.A
-B = sys_dt.B
-C = sys_dt.C
+Ac = sys_ct.A
+Bc = sys_ct.B
+Cc = sys_ct.C
 
 %% Poles
 os = 10;
@@ -111,15 +136,15 @@ s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
 % Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/5 
 % Pc = [-0.8+0.2i -0.8-0.2i -1.2 -1.4 -3.6 -3.8]*5;
-Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8];
+%Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8];
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz)
 
 eigAF = eig(A-B*F)
 
 %%Just to see
-Fc = place(Ac, Bc, Pc)
-eigAFc = eig(Ac-Bc*Fc)
+% Fc = place(Ac, Bc, Pc)
+%eigAFc = eig(Ac-Bc*Fc)
 
 %% Observer Design
 OM = obsv(Ac, Cc);
@@ -130,7 +155,7 @@ if (rank_OM==n)
     POc = 10*Pc;
     POz = exp(POc*Ts);
 
-    L = place(A', C', POz)'
+     L = zeros(2,6) %place(A', C', POz)'
 else
     disp('System is NOT Observable')
     L = zeros(2,6);
