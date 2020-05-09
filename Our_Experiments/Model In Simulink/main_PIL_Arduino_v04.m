@@ -45,23 +45,29 @@ G = 300; %amplifier/motor voltage to torque gain.
 
 n=6;    % Number of System States
 
-Ac=[0 1 0 0 0 0;
-    -1.25*k*r^2/I1 -b1/I1 -0.5*k*r^2/I1 0 k*a/I1 0;
-    0 0 0 1 0 0;
-    0.5*k*r^2/I2 0 -1.25*k*r^2/I2 -b2/I2 -k*a/I2 0;
-    0 0 0 0 0 1;
-    k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
-eigAC = eig(Ac)
- 
-Bc=[0 0;
-    1/I1 0;
-    0 0;
-    0 1/I2;
-    0 0;
-    0 0];
+% Ac=[0 1 0 0 0 0;
+%     -1.25*k*r^2/I1 -b1/I1 -0.5*k*r^2/I1 0 k*a/I1 0;
+%     0 0 0 1 0 0;
+%     0.5*k*r^2/I2 0 -1.25*k*r^2/I2 -b2/I2 -k*a/I2 0;
+%     0 0 0 0 0 1;
+%     k*a/m 0 -k*a/m 0 (k0 - 2*k*a^2/m) -b0/m];
+% eigAC = eig(Ac)
+%  
+% Bc=[0 0;
+%     1/I1 0;
+%     0 0;
+%     0 1/I2;
+%     0 0;
+%     0 0];
+% 
+% Cc=[0 1/2 0 1/2 0 0;
+%     0  0  0  0  1 0];
 
-Cc=[0 1/2 0 1/2 0 0;
-    0  0  0  0  1 0];
+load('SSData');
+
+Ac = SSData.A;
+Bc = SSData.B;
+Cc = SSData.C;
 
 CO = ctrb(Ac,Bc);
 

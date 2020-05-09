@@ -11,7 +11,7 @@ fs=250;          % Sampling Frequency in Hz
 Ts=1/fs;         % Sampling Period
 
 linear = 1;
-closedloop = 1;
+closedloop = 0;
 matlabController = 1; % else use Arduino controller
 
 %% Input and Output Noise/Disturbance
@@ -65,24 +65,26 @@ xo = [O1_dot_o, O2_dot_o, x_dot_o, O1_o, O2_o, x_o]'; %State initial condition
 xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 
 
-
 %% Continuous-Time Linear State-Space Model
 % x_dot(t) = Ac?x(t)+Bc?x(t)
 %        y(t) = Cc?x(t)
 n = 6;
   
 
-load('OperatingModel.mat')
+% load('OperatingModel.mat')
+% load('Updaded Calc.mat')
+load('SSData');
 
-Ac = ss1.A
-Bc = ss1.B
-Cc = ss1.C
-% Cc = [0.5 0.5 0 0 0 0;
+A = SSData.A;
+B = SSData.B;
+C = SSData.C;
+% Cc = ss1.C
+% Cc = [0.5 0.5 0 0 0 0];
 %       0 0 0 0 0 1];
 
-eigAc = eig(Ac)
-CO = ctrb(Ac,Bc);
-rank(CO)
+eigA = eig(A);
+CO = ctrb(A,B);
+rank(CO);
 
 if (rank(CO)==n)
     disp('System is Controllable')
@@ -92,34 +94,35 @@ else
 end
 
 %% Controller Design
-sys_ct = ss(Ac, Bc, Cc, 0);
-sys_dt = c2d(sys_ct, Ts);
+sys_dt = ss(A, B, C, 0, Ts);
+sys_ct = d2c(sys_dt);
 
-A = sys_dt.A
-B = sys_dt.B
-C = sys_dt.C
+Ac = sys_ct.A;
+Bc = sys_ct.B;
+Cc = sys_ct.C;
 
 %% Poles
 os = 10;
 tsettle = 5;
-zeta = log(os/100)\(sqrt(pi^2+log(os/100)^2))
-wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
+zeta = log(os/100)\(sqrt(pi^2+log(os/100)^2));
+wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle);
 
 %Dominant second order poles
-s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
+s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)];
 
-Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
+Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))];
 % Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/5 
 % Pc = [-0.8+0.2i -0.8-0.2i -1.2 -1.4 -3.6 -3.8]*5;
 Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8];
-Pz = exp(Pc*Ts);
-F=place(A, B, Pz)
 
-eigAF = eig(A-B*F)
+Pz = exp(Pc*Ts);
+F=place(A, B, Pz);
+
+eigAF = eig(A-B*F);
 
 %%Just to see
-Fc = place(Ac, Bc, Pc)
-eigAFc = eig(Ac-Bc*Fc)
+Fc = place(Ac, Bc, Pc);
+eigAFc = eig(Ac-Bc*Fc);
 
 %% Observer Design
 OM = obsv(Ac, Cc);
@@ -130,7 +133,7 @@ if (rank_OM==n)
     POc = 10*Pc;
     POz = exp(POc*Ts);
 
-    L = place(A', C', POz)'
+     L = place(A', C', POz)'
 else
     disp('System is NOT Observable')
     L = zeros(2,6);
