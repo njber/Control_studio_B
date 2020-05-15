@@ -4,9 +4,9 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true; % True: To simulate
-Tsim = 3;        % Total Simulation length in seconds. 
+Tsim = 10;        % Total Simulation length in seconds. 
                  % Set Tsim=Inf to run indefinitely                            
-fs=1000;          % Sampling Frequency in Hz
+fs=100;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
@@ -72,11 +72,11 @@ xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
 n = 6;
   
 
-load('linsystem.mat')
+load('SSDClip.mat')
 
-A = sys.A
-B = sys.B
-C = sys.C
+A = SSDClip.A
+B = SSDClip.B
+C = SSDClip.C
 
 
 
@@ -101,6 +101,10 @@ C = sys.C
 % 
 % Cc = [0.5 0 0.5 0 0 0;
 %       0 0 0 0 0 1];
+
+
+
+
 
 
 % eigAc = eig(Ac)

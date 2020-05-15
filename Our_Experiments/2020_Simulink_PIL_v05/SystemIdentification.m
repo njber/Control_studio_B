@@ -28,7 +28,7 @@ u1_step_time = 20;
 u2_step_time = 10;
 
 Tsim = 30;
-Fs   = 1000;
+Fs   = 100;
 Ts   = 1/Fs;
 
 %% Launch Simulation
