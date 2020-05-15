@@ -95,7 +95,8 @@ end
 
 %% Controller Design
 sys_dt = ss(A, B, C, 0, Ts);
-sys_ct = d2c(sys_dt);
+% sys_ct = d2c(sys_dt);
+[sys_ct,G] = d2c(sys_dt);
 
 Ac = sys_ct.A;
 Bc = sys_ct.B;
