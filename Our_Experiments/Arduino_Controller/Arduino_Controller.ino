@@ -60,6 +60,11 @@ BLA::Matrix<n,m> B;
 BLA::Matrix<p,n> C;
 
 
+int Controller = 1; // 1 = State Feedback
+                    // 2 = LQR
+                    // 3 = Non linear
+
+
 //___________________________________________________________________________
 //                             Setup
 //          
@@ -132,6 +137,10 @@ void Controller() {
   y_k(0) = in1; // pully speed
   y_k(1) = in2; // tension
 
+
+
+//  if Controller == 1 do state feedback
+
   static BLA::Matrix<n,1> x_hat_k; //TODO: maybe initialise
   x_hat = x_hat_k;
   
@@ -144,6 +153,12 @@ void Controller() {
   //Update estimated states
   x_hat_k = A*x_hat +B*u_k + L*(y_k - C*x_hat);
 
+ 
+  
+  
+  
+  
+  
   // Associate board outputs to system inputs to be applied
 
   out1 = saturate(u_k(0),-10,10);
