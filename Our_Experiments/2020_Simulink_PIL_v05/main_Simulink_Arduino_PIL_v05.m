@@ -10,8 +10,8 @@ fs=100;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
-linear = 1;
-closedloop = 0;
+linear = 0;
+closedloop = 1;
 matlabController = 1; % else use Arduino controller
 
 %% Input and Output Noise/Disturbance
@@ -25,7 +25,7 @@ du_offset2 = 0;
 w_noise = 0;
 x_noise = 0;
 
-obs = 0;
+obs = 1;
 PIL=0;          %0: Manually start the PIL controller 
                 %   after simulation started
                 %1: Automatically start PIL controller 
@@ -57,9 +57,9 @@ O2_dot_o = 0;
 x_dot_o = 0;
 O1_o = 0;
 O2_o = 0;
-x_o = 0.0;
+x_o = 0.02;
 
-zo = [O1_o, O2_o, x_o]';
+zo = [O1_o, O2_o, -x_o]';
 z_hat_o = [O1_dot_o, O2_dot_o, x_dot_o]';
 xo = [O1_dot_o, O2_dot_o, x_dot_o, O1_o, O2_o, x_o]'; %State initial condition
 xo_hat=[0 0 0 0 0 0]';          %Observer initial condition
@@ -129,8 +129,8 @@ Bc = sys_ct.B
 Cc = sys_ct.C
 
 %% Poles
-os = 10;
-tsettle = 5;
+os = 5;
+tsettle = 10;
 zeta = log(os/100)\(sqrt(pi^2+log(os/100)^2))
 wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
 
@@ -150,6 +150,14 @@ eigAF = eig(A-B*F)
 % Fc = place(Ac, Bc, Pc)
 %eigAFc = eig(Ac-Bc*Fc)
 
+%% Steady state control design
+ y_star = [100 0.02]';
+ Mo = (-Cc)*(Ac^-1)*Bc;
+ Nu = Mo^-1;
+ Nx = (A^-1)*B*Nu;
+ 
+ uss = Nu*y_star
+ xss = Nx*y_star
 %% Observer Design
 OM = obsv(Ac, Cc);
 rank_OM=rank(OM);
@@ -159,7 +167,7 @@ if (rank_OM==n)
     POc = 10*Pc;
     POz = exp(POc*Ts);
 
-     L = zeros(2,6) %place(A', C', POz)'
+     L = place(A', C', POz)'
 else
     disp('System is NOT Observable')
     L = zeros(2,6);
