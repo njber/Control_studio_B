@@ -10,7 +10,7 @@ fs=100;          % Sampling Frequency in Hz
 
 Ts=1/fs;         % Sampling Period
 
-linear = 0;
+linear = 1;
 closedloop = 1;
 matlabController = 1; % else use Arduino controller
 
@@ -79,35 +79,6 @@ B = SSDClip.B
 C = SSDClip.C
 
 
-
-
-% Cc = [0.5 0.5 0 0 0 0;
-%       0 0 0 0 0 1];
-
-% Ac =1.0e+03 *[-0.0010   -0.0844         0    0.0844         0    1.6238;
-%     0.0010         0         0         0         0         0;
-%          0    0.0844   -0.0010   -0.0844         0   -1.6238;
-%          0         0    0.0010         0         0         0;
-%          0    0.0037         0    0.0037   -0.0014    0.7857;
-%          0         0         0         0    0.0010         0];
-% 
-% Bc =1.0e-03 *[0.8000         0;
-%          0    0.8000;
-%          0         0;
-%          0         0;
-%          0         0;
-%          0         0];
-% 
-% 
-% Cc = [0.5 0 0.5 0 0 0;
-%       0 0 0 0 0 1];
-
-
-
-
-
-
-% eigAc = eig(Ac)
 CO = ctrb(A,B);
 rank(CO)
 
@@ -129,10 +100,10 @@ Bc = sys_ct.B
 Cc = sys_ct.C
 
 %% Poles
-os = 5;
-tsettle = 10;
-zeta = log(os/100)\(sqrt(pi^2+log(os/100)^2))
-wn=-log(0.02*sqrt(1-zeta^2))/(zeta*tsettle)
+os = 20;
+tsettle = 2.5;
+zeta = 0.707; % log(os/100)\(sqrt(pi^2+log(os/100)^2))
+wn=-log(sqrt(1-zeta^2))/(zeta*tsettle)
 
 %Dominant second order poles
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
@@ -140,15 +111,11 @@ s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
 % Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/5 
 % Pc = [-0.8+0.2i -0.8-0.2i -1.2 -1.4 -3.6 -3.8]*5;
-%Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8];
+%Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*0.2;
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz)
 
 eigAF = eig(A-B*F)
-
-%%Just to see
-% Fc = place(Ac, Bc, Pc)
-%eigAFc = eig(Ac-Bc*Fc)
 
 %% Steady state control design
  y_star = [100 0.02]';
@@ -164,7 +131,7 @@ rank_OM=rank(OM);
 if (rank_OM==n)
     disp('System is Observable')
 
-    POc = 10*Pc;
+    POc = 5*Pc;
     POz = exp(POc*Ts);
 
      L = place(A', C', POz)'
