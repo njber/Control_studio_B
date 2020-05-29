@@ -1,7 +1,7 @@
 clear;
 load('result_data.mat')
-y1 = -y(:,1);
-y2 = -y(:,2);
+y1 = y(:,1);
+y2 = y(:,2);
 u1 = u(:,1);
 u2 = u(:,2);
 

@@ -4,7 +4,7 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true; % True: To simulate
-Tsim = 10;        % Total Simulation length in seconds. 
+Tsim = 1.38;        % Total Simulation length in seconds. 
                  % Set Tsim=Inf to run indefinitely                            
 fs=100;          % Sampling Frequency in Hz
 
@@ -100,9 +100,9 @@ Bc = sys_ct.B
 Cc = sys_ct.C
 
 %% Poles
-os = 20;
-tsettle = 2.5;
-zeta = 0.707; % log(os/100)\(sqrt(pi^2+log(os/100)^2))
+os = 10;
+tsettle = 0.0602;
+zeta = 0.5; % log(os/100)\(sqrt(pi^2+log5(os/100)^2))
 wn=-log(sqrt(1-zeta^2))/(zeta*tsettle)
 
 %Dominant second order poles
@@ -111,7 +111,7 @@ s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
 % Pc = [-0.707+0.707*i, -0.707-0.707*i, -4-4i,-4+4i, -4.2-4.2i, -4.2+4.2i]/5 
 % Pc = [-0.8+0.2i -0.8-0.2i -1.2 -1.4 -3.6 -3.8]*5;
-%Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*0.2;
+% Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*9.8;
 Pz = exp(Pc*Ts);
 F=place(A, B, Pz)
 
@@ -119,9 +119,9 @@ eigAF = eig(A-B*F)
 
 %% Steady state control design
  y_star = [100 0.02]';
- Mo = (-Cc)*(Ac^-1)*Bc;
+ Mo = -(Cc)*(Ac^-1)*Bc;
  Nu = Mo^-1;
- Nx = (A^-1)*B*Nu;
+ Nx = -(A^-1)*B*Nu;
  
  uss = Nu*y_star
  xss = Nx*y_star
@@ -131,7 +131,7 @@ rank_OM=rank(OM);
 if (rank_OM==n)
     disp('System is Observable')
 
-    POc = 5*Pc;
+    POc = Pc;
     POz = exp(POc*Ts);
 
      L = place(A', C', POz)'
