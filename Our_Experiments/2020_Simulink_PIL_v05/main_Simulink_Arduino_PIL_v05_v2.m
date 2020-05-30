@@ -28,9 +28,10 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-w_noise = 0;
-x_noise = 0;
+w_noise = 0; % process noise
+x_noise = 1; % measurment noise
 
+noise = 0; % disable: 0; enable:1
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
 G = 300; %amplifier/motor voltage to torque gain.
