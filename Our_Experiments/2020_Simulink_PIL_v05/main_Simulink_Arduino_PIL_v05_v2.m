@@ -8,11 +8,11 @@ Tsim = 5;             % Total Simulation length in seconds.
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
-linear = 0;           % Plant selection
+linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 2;       % SFC: 1, LQR: 2, 
-matlabController = 0; % else use Arduino controller
+matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
@@ -31,7 +31,9 @@ du_offset2 = 0;
 w_noise = 0; % process noise
 x_noise = 1; % measurment noise
 
-noise = 0; % disable: 0; enable:1
+w_ss = 0; %constant error
+x_ss = 0; %constant error
+
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
 G = 300; %amplifier/motor voltage to torque gain.
@@ -130,10 +132,24 @@ if (rank_OM==n)
   if (obs == 1)
     L = place(A', C', POz)';
   end
-
   
-   Rf=eye(2);
-   Qf=0.000001*eye(6);
+  
+   cov1 = 8.9809; %OL simulation
+%    cov1 = 17.5015; %OL simulation
+%    cov1 = 9.0465; %OL simulation
+   cov2 = 8.8837; %OL simulation
+%    cov2 = 0.0284; %OL simulation
+   
+%    Rf=eye(2);
+   Rf=[cov1 0;
+       0 cov2];
+   Qf=0.000001*[1 0 0 0 0 0;
+       0 1 0 0 0 0;
+       0 0 1 0 0 0;
+       0 0 0 1 0 0;
+       0 0 0 0 1 0;
+       0 0 0 0 0 1];
+%    Qf=0.000001*eye(6); % initial
    [Pf,po_dt,Kf_t] = dare(A',C',Qf,Rf,[],[]);
    
    if (obs == 2)
