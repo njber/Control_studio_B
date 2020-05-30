@@ -45,7 +45,7 @@ float out3 = 0;
 float out4 = 0;
 
 // Steady state values
-float r = 0.03; //To DO; make changeable
+BLA::Matrix<m,1> r; //To DO; make changeable
 
 // Torque to voltage conversion
 
@@ -56,6 +56,8 @@ float G = 300;
 BLA::Matrix<n,1> x_hat;  // u(k) \in R^n
 BLA::Matrix<m,1> u_k;  // u(k) \in R^m
 BLA::Matrix<p,1> y_k;
+
+BLA::Matrix<n,1> x_hat_k; //TODO: maybe initialise
 
 // State Feedback Controller
 BLA::Matrix<m,n> F;
@@ -78,17 +80,22 @@ void setup() {
   Serial.begin(baud_rate); // opens serial port, sets data rate
 
   // State Feedback Gain
-  F <<  -0.0341,    0.0589,   -0.0466,    0.4015,    0.3202,   -0.2113
-        -0.0417,    0.038,7   -0.0544,    0.1277,    0.1202,   -0.3497;
+  F <<     -0.0179,    0.0563,    0.0274,    0.0432,    0.0739,    0.2896,
+   -0.0296,    0.0355,   -0.0006,   -0.1258,   -0.0516,    0.0143;
 
-  L <<        0.1588,    0.1037,
-    0.0638,    0.0416,
-   -0.0348,   -0.0231,
-    1.7421,    1.1385,
-   -1.1667,   -0.7617,
-    0.2488,    0.1607;
+  L <<    0.0428,    0.8223,
+   -0.2583,    0.3972,
+   -0.0538,   -0.0187,
+    0.0004,   -0.1689,
+   -0.0251,    0.1068,
+    0.0104,   -0.1257;
 
-  L = L * 100000;
+  L = L * 0.000001;
+
+  r << 1.0269,
+  0.9639;
+
+  x_hat_k << 0, 0, 0, 0, 0, 0;
 
   A << 0.8285,    0.2964,   -0.0518,   -0.0256,    0.0416,   -0.0266,
     0.2311,    0.4957,    0.0790,   -0.0212,    0.0041,   -0.0108,
@@ -136,8 +143,8 @@ void Controller() {
 
   BLA::Matrix<n,1> x_k;
   // Associate board inputs to states
-  x_k(1)=in1;
-  x_k(2)=in2;
+//  x_k(0)=in1;
+//  x_k(1)=in2;
 //  x_k(4)=in3;
 //  x_k(5)=in4;
   // Go off just the outputs
@@ -145,28 +152,33 @@ void Controller() {
   y_k(1) = in2; // tension
 
 
+  y_k(0) = y_k(0) * 100;
+  y_k(1) = y_k(1) / 100;
 
-//  if Controller == 1 do state feedback
-
-  static BLA::Matrix<n,1> x_hat_k; //TODO: maybe initialise
   x_hat = x_hat_k;
   
 
+  //TODO impliment r here in future
+
   //State Feedback Controller
-  u_k = (-F*x_hat + r)/G;
+  u_k = (-F*x_hat + r);
+//  u_k(0) = saturate(u_k(0),-10,10);
+//  u_k(1) = saturate(u_k(1),-10,10);
 
   //Update estimated states
   x_hat_k = A*x_hat +B*u_k + L*(y_k - C*x_hat);
-  
-  
+   
+  u_k = u_k/G;
   
   // Associate board outputs to system inputs to be applied
 
   out1 = saturate(u_k(0),-10,10);
   out2 = saturate(u_k(1),-10,10);
+//  out1 = u_k(0);
+//  out2 = u_k(1);
 
-  out3 = 3;
-  out4 = 4;
+  out3 = 4;
+  out4 = 5;
 
   // Send out1, out2, out3, out4 to Simulink
   write_Simulink(); 

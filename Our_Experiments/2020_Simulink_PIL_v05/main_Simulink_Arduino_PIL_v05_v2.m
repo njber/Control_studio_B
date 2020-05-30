@@ -12,8 +12,8 @@ linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 2;       % SFC: 1, LQR: 2, 
-matlabController = 1; % else use Arduino controller
-PIL=0;                %0: Manually start the PIL controller 
+matlabController = 0; % else use Arduino controller
+PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
                       %   from the beginning of the simulation

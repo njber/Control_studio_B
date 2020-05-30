@@ -44,11 +44,20 @@ float out2 = 0;
 float out3 = 0;
 float out4 = 0;
 
+// Steady state values
+BLA::Matrix<m,1> r; //To DO; make changeable
+
+// Torque to voltage conversion
+
+float G = 300;
+
 
 // System Variables
 BLA::Matrix<n,1> x_hat;  // u(k) \in R^n
 BLA::Matrix<m,1> u_k;  // u(k) \in R^m
 BLA::Matrix<p,1> y_k;
+
+BLA::Matrix<n,1> x_hat_k; //TODO: maybe initialise
 
 // State Feedback Controller
 BLA::Matrix<m,n> F;
@@ -59,10 +68,6 @@ BLA::Matrix<n,n> A;
 BLA::Matrix<n,m> B;
 BLA::Matrix<p,n> C;
 
-
-int Controller = 1; // 1 = State Feedback
-                    // 2 = LQR
-                    // 3 = Non linear
 
 
 //___________________________________________________________________________
@@ -75,32 +80,39 @@ void setup() {
   Serial.begin(baud_rate); // opens serial port, sets data rate
 
   // State Feedback Gain
-  F <<   -31.1527,  -16.5069,   31.3074,   16.7928,  -40.1742,  -34.0344,
-  -51.6751,  -17.0642,   51.8748,   17.3504, -129.0792,  -35.1621;
+  F <<  0.0088,   -0.0193,    0.0032,   -0.0004,   -0.0005,   -0.0002,
+        0.0096,   -0.0188,    0.0031,   -0.0004,   -0.0005,   -0.0003;
 
-  L <<        -1.2544,    0.0899,
-   -0.4060,    1.8499,
-   -0.8071,   -0.0587,
-    0.6432,   -1.8495,
-   -0.3119,    0.2452,
-   -5.2473,    3.3310;
+  L <<        0.0428,    0.8223,
+   -0.2583,    0.3972,
+   -0.0538,   -0.0187,
+    0.0004,   -0.1689,
+   -0.0251,    0.1068,
+    0.0104,   -0.1257;
 
-  A << 1.0000,    0.0100,   -0.0000,   -0.0000,    0.0080,    0.0000,
-      -0.0020,    0.9939,   -0.0033,   -0.0000,    1.6073,    0.0080,
-       0.0000,    0.0000,    1.0000,    0.0100,   -0.0080,   -0.0000,
-      -0.0003,    0.0000,   -0.0020,    0.9939,   -1.6073,   -0.0080,
-       0.0034,    0.0000,   -0.0034,   -0.0000,    1.0068,    0.0100,
-       0.6702,    0.0033,   -0.6702,   -0.0033,    1.3621,    0.9926;
+  L = L * 0.000001;
 
-  B <<     0.0003,   -0.0000,
-    0.0680,   -0.0000,
-    0.0000,    0.0003,
-    0.0000,    0.0680,
-    0.0000,   -0.0000,
-    0.0001,   -0.0001;
+  r << 11.9694,
+  12.4853;
 
-  C << 0,    0.5000,         0,    0.5000,         0,         0,
-       0,         0,         0,         0,    1.0000,         0;
+  x_hat_k << 0, 0, 0, 0, 0, 0;
+
+  A << 0.8285,    0.2964,   -0.0518,   -0.0256,    0.0416,   -0.0266,
+    0.2311,    0.4957,    0.0790,   -0.0212,    0.0041,   -0.0108,
+   -0.0739,    0.1577,    0.9509,    0.0321,    0.0287,    0.0051,
+   -0.1174,   -0.0701,   -0.0186,    0.5455,    0.2308,   -0.3369,
+    0.0769,    0.0352,   -0.0283,    0.3097,    0.7851,   -0.0997,
+   -0.0209,   -0.0424,   -0.0016,    0.0945,    0.2603,    0.9208;
+
+  B << 2.5683,    3.4307,
+      -4.7615,   -4.0866,
+       1.9837,    3.8997,
+      -3.6562,    4.9878,
+       2.0031,   -2.9871,
+      -0.8871,    0.3195;
+
+  C <<  0.2843,   -0.5892,    0.0969,   -0.0119,   -0.0159,   -0.0082,
+        0.0218,    0.0128,   -0.0027,   -0.0027,   -0.0007,   -0.0020;
 }
 
 
@@ -127,45 +139,45 @@ void loop() {
 void Controller() {
   // Receive in1, in2, in3, in4 from Simulink
   read_Simulink();  
-  
+
+
+  BLA::Matrix<n,1> x_k;
   // Associate board inputs to states
-//  x_k(1)=in1;
-//  x_k(3)=in2;
+//  x_k(0)=in1;
+//  x_k(1)=in2;
 //  x_k(4)=in3;
 //  x_k(5)=in4;
   // Go off just the outputs
   y_k(0) = in1; // pully speed
   y_k(1) = in2; // tension
 
+  y_k(0) = y_k(0) * 100;
+  y_k(1) = y_k(1) / 100;
 
-
-//  if Controller == 1 do state feedback
-
-  static BLA::Matrix<n,1> x_hat_k; //TODO: maybe initialise
   x_hat = x_hat_k;
   
 
+  //TODO impliment r here in future
+
   //State Feedback Controller
-  //u_k = -F*x_hat + 0.1; //TODO: add r
-  // Open Loop
-  u_k << 1/300, 1.5/300;
+  u_k = (-F*x_hat + r);
+//  u_k(0) = saturate(u_k(0),-10,10);
+//  u_k(1) = saturate(u_k(1),-10,10);
 
   //Update estimated states
   x_hat_k = A*x_hat +B*u_k + L*(y_k - C*x_hat);
-
- 
   
-  
-  
-  
+  u_k = u_k/G;
   
   // Associate board outputs to system inputs to be applied
 
   out1 = saturate(u_k(0),-10,10);
   out2 = saturate(u_k(1),-10,10);
+  // out1 = u_k(0);
+  // out2 = u_k(1);
 
-  out3 = 3;
-  out4 = 4;
+  out3 = 4;
+  out4 = 5;
 
   // Send out1, out2, out3, out4 to Simulink
   write_Simulink(); 
