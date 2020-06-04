@@ -44,7 +44,7 @@ float out2 = 0;
 float out3 = 0;
 float out4 = 0;
 
-// Steady state values
+// Steady state value calculation matrixes
 BLA::Matrix<m,1> r; //To DO; make changeable
 
 // Torque to voltage conversion
