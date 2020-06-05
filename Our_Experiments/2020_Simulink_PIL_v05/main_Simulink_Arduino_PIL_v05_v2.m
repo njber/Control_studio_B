@@ -33,7 +33,7 @@ x_noise = 0;
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
-G = 300; %amplifier/motor voltage to torque gain.
+G = 30; %amplifier/motor voltage to torque gain.
            
                 
 %% Initial Condition

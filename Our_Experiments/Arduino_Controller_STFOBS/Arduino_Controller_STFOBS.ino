@@ -49,7 +49,7 @@ BLA::Matrix<m,1> r; //To DO; make changeable
 
 // Torque to voltage conversion
 
-float G = 300;
+float G = 30;
 
 
 // System Variables
