@@ -11,9 +11,9 @@ Ts=1/fs;              % Sampling Period
 linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 2;       % SFC: 1, LQR: 2, 
+controller = 1;       % SFC: 1, LQR: 2, 
 matlabController = 1; % else use Arduino controller
-PIL=1;                %0: Manually start the PIL controller 
+PIL = 1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
                       %   from the beginning of the simulation
@@ -28,8 +28,10 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
+U_dist = 1;
+
 w_noise = 0; % process noise
-x_noise = 1; % measurment noise
+x_noise = 0; % measurment noise
 
 w_ss = 0; %constant error
 x_ss = 0; %constant error
@@ -103,6 +105,21 @@ if (controller == 1)
   F=place(A, B, Pz);
 end
 
+% Augmented System
+O_21=[0 0]';
+A_aug=[A O_21; 
+       C 1];
+B_aug=[B;
+       0];
+   
+ %% LQR for augmented system
+p3=[0.1 0.10001 0.8];
+if (controller==1.5)
+    K_aug=place(A_aug,B_aug,p3);
+    F=K_aug(1:2);
+    Ki=K_aug(3);
+end
+
 % LQR Controller Design
 Qy=[0.1 0;
     0 1];
@@ -111,6 +128,8 @@ R=1*eye(2);
 
 if (controller ==2)
   F=dlqr(A,B,Q,R);
+% [K,S,e] = lqi(SYS,Q,R,N); %LQI controller
+
 end
 
 %% Steady state control design
