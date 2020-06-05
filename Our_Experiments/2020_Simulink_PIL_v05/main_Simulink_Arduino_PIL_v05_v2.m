@@ -8,11 +8,11 @@ Tsim = 5;             % Total Simulation length in seconds.
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
-linear = 0;           % Plant selection
+linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 2;       % SFC: 1, LQR: 2, 
-matlabController = 0; % else use Arduino controller
+controller = 3;       % SFC: 1, LQR: 2, SMC: 3
+matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
@@ -142,6 +142,23 @@ else
   disp('System is NOT Observable')
   L = zeros(2,6);
 end
+
+%% Design SMC
+% Desing surface Cs and switching gain gamma
+F=dlqr(A,B,Q,R);
+Cs1=[40 0 0 0 0 0];
+Cs2=[0 0 0 10 0 0];
+Cs=[Cs1;
+    Cs2];
+CsRank = rank(Cs)
+gamma=0.01;
+Keq=(Cs*B)^-1 * Cs*A;
+Ksw=gamma*(Cs*B)^1;
+if(controller == 3)
+    xss = xss;
+end
+
+
 %% Start Simulation
 if (simulate)
   open_system(simu);
