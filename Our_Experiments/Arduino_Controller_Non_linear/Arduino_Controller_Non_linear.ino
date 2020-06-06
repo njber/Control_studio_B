@@ -77,10 +77,11 @@ BLA::Matrix<m,m> Nu;
 BLA::Matrix<n,m> Nx;
 
 //SMC Variables
-BLA::Matrix<m,n> Cs;
-BLA::Matrix<m,n> Keq;
-BLA::Matrix<m,m> Ksw;
+BLA::Matrix<2,6> Cs;
+BLA::Matrix<2,6> Keq;
+BLA::Matrix<2,2> Ksw;
 BLA::Matrix<2,1> matrix;
+BLA::Matrix<2,1> matrix2;
 
 //___________________________________________________________________________
 //                             Setup
@@ -91,16 +92,16 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(baud_rate); // opens serial port, sets data rate
 
-  star <<  80,   0.02;
+  star <<  100,   0.02;
 
-  Cs << 40,     0,     0,     0,     0,     0,
-     0,     0,    0,    10,     0,    0;
+  Cs << 1,     0,     0,     0,     0,     0,
+     0,     0,    0,    1,     0,    0;
 
-  Keq << 0.1789,    0.0678,   -0.0077,  -0.0788,   -0.0231,    0.0404,
-    0.1076,    0.0356,   -0.0094,    0.0516,    0.0294,   -0.0380;
+  Keq << 0.178878322358995,   0.067808964625879,  -0.007673864777508,  -0.078849181523783,  -0.023052275506579,   0.040355853922223,
+   0.107580275372884,   0.035644847458502,  -0.009364253917540,   0.051559529504939,   0.029381048316186,  -0.037960099422626;
 
-  Ksw << 1.0273,    1.3723,
-   -0.3656,   0.4988;
+  Ksw << 1.027319126714554,   1.372286975335137,
+  -0.365616898702692,   0.498776818164619;
 
   Nu << 0.090027961915934, -13.022536982629868,
    0.089972039437138,  13.022530279489462;
@@ -184,9 +185,10 @@ void Controller() {
   
 //  SMC controller line
   matrix = Cs*(x_hat-xss);
-  matrix (1, 1) = signbit(matrix (1, 1));
-  matrix (2, 1) = signbit(matrix (2, 1));
-  u_k = -Keq*(x_hat-xss) -Ksw*matrix;
+  matrix2 (1, 1) = tanh(matrix (1, 1));
+  matrix2 (2, 1) = tanh(matrix (2, 1));
+  u_k = -Keq*(x_hat-xss) -Ksw*matrix2;
+
 
   //Update estimated states
   x_hat_k = A*x_hat +B*u_k + L*(y_k - C*x_hat);
@@ -197,11 +199,11 @@ void Controller() {
 
   out1 = saturate(u_k(0),-10,10);
   out2 = saturate(u_k(1),-10,10);
-  // out1 = u_k(0);
-  // out2 = u_k(1);
+//   out1 = u_k(0);
+//   out2 = u_k(1);
 
-  out3 = 4;
-  out4 = 5;
+  out3 = matrix2(0);
+  out4 = matrix2(1);
 
   // Send out1, out2, out3, out4 to Simulink
   write_Simulink(); 
