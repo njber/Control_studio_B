@@ -11,7 +11,8 @@ Ts=1/fs;              % Sampling Period
 linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 1;       % SFC: 1, LQR: 2, 
+controller = 2;       % SFC: 1, LQR: 2, SFCwithIntegral :4;
+%have an option for integral action...
 matlabController = 1; % else use Arduino controller
 PIL = 1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -21,14 +22,17 @@ PIL = 1;                %0: Manually start the PIL controller
 y_star = [100 0.02]';
 
 %% Input and Output Noise/Disturbance
-du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
+du1 = 1;     %Enable input disturbace, 5*sin(2*pi*2*t)
 du2 = 0;
-du_freq1 = 10*pi;
+du_freq1 = 1*pi; %10*pi;
 du_offset1 = pi/2;
-du_freq2 = 10*pi;
+du_freq2 = 1*pi; %10*pi;
 du_offset2 = 0;
 
-U_dist = 1;
+U_dist = 1; %??
+
+u1_bias = 0;
+u2_bias = 0;
 
 w_noise = 0; % process noise
 x_noise = 0; % measurment noise
@@ -38,7 +42,7 @@ x_ss = 0; %constant error
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
-G = 300; %amplifier/motor voltage to torque gain.
+G = 300; %amplifier/motor voltage to  torque gain.
            
                 
 %% Initial Condition
@@ -95,7 +99,7 @@ wn=-log(sqrt(1-zeta^2))/(zeta*tsettle)
 % Dominant second order poles
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
-Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
+% Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
 Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*3;
   
 % Discrete EigenValues
@@ -106,31 +110,73 @@ if (controller == 1)
 end
 
 % Augmented System
-O_21=[0 0]';
+O_21 = [0 0 0 0 0 0;
+    0 0 0 0 0 0]';
+% O_22 = [0 0;
+%     0 0]';
+O_22 = eye(2);
+O_B = [0 0;
+    0 0];
 A_aug=[A O_21; 
-       C 1];
+       C O_22];
 B_aug=[B;
-       0];
+       O_B];
    
- %% LQR for augmented system
-p3=[0.1 0.10001 0.8];
-if (controller==1.5)
-    K_aug=place(A_aug,B_aug,p3);
-    F=K_aug(1:2);
-    Ki=K_aug(3);
-end
+   
+Qy=[0.1 0;
+    0 1];
+QL=C'*Qy*C;
+Z  = [0 0 0 0 0 0;
+    0 0 0 0 0 0];
+X = zeros(2);
+Q_aug = [QL Z';
+    Z X];
 
-% LQR Controller Design
+R=1*eye(2);
+% R=[1 0
+%     0 1];
+% QL = eye(8)
+N = [0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 0];
+check = [Q_aug N';
+    N R]
+    
+   
+ %% SFC for augmented system
+p3=[-0.8 -1 -1.2 -1.4 -1.6 -1.8 -2 -2.2]*5;
+
+% K_aug=place(A_aug,B_aug,p3);
+% [Ki,S,CLP] = lqi(sys_dt,Q_aug,R);
+F=dlqr(A,B,Q,R);
+% Fi=K_aug(1:2);
+a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)];
+b = [K_aug(2) K_aug(4) K_aug(6) K_aug(8) K_aug(10) K_aug(12)];
+Fi = [a;
+    b];
+% Fi=K_aug(1:12);
+% Ki=K_aug(3);
+
+Ki=[K_aug(13) K_aug(15);
+    K_aug(14) K_aug(16)];
+
+
+%% LQR Controller Design
 Qy=[0.1 0;
     0 1];
 Q=C'*Qy*C;
 R=1*eye(2);
 
-if (controller ==2)
-  F=dlqr(A,B,Q,R);
+if(controller==2)
+    F=dlqr(A,B,Q,R);
+end
+if(controller==4)
+    F=dlqr(A,B,Q,R);
+end
+
+
 % [K,S,e] = lqi(SYS,Q,R,N); %LQI controller
 
-end
+
 
 %% Steady state control design
  Mo = -(Cc)*(Ac^-1)*Bc;
@@ -162,8 +208,8 @@ if (rank_OM==n)
 %    Rf=eye(2);
    Rf=[cov1 0;
        0 cov2];
-   Qf=0.000001*[1 0 0 0 0 0;
-       0 1 0 0 0 0;
+   Qf=0.00001*[1 0 0 0 0 0;
+       0 1000 0 0 0 0;
        0 0 1 0 0 0;
        0 0 0 1 0 0;
        0 0 0 0 1 0;
