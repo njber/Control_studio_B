@@ -173,7 +173,7 @@ p3=[-0.8 -1 -1.2 -1.4 -1.6 -1.8 -2 -2.2]*5;
 
 % K_aug=place(A_aug,B_aug,p3);
 % [Ki,S,CLP] = lqi(sys_dt,Q_aug,R);
-if(integralaction==1)
+% if(integralaction==1)
     K_aug=dlqr(A_aug,B_aug,Q_aug,R);
     % Fi=K_aug(1:2);
     a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)];
@@ -185,10 +185,10 @@ if(integralaction==1)
 
     Ki=[K_aug(13) K_aug(15);
         K_aug(14) K_aug(16)];
-else
-    Fi=0;
-    Ki=0;
-end
+% else
+%     Fi=0;
+%     Ki=0;
+% end
 
 
 
