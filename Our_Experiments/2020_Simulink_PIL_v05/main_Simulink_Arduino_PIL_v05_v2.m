@@ -11,7 +11,7 @@ Ts=1/fs;              % Sampling Period
 linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-noise = 2;            % Enable sensor noise
+noise = 1;            % Enable sensor noise
 controller = 2;       % SFC: 1, LQR: 2, SMC: 3
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
@@ -104,10 +104,12 @@ if (controller == 1)
 end
 
 % LQR Controller Design
-Qy=[0.1 0;
+Qy=[1 0;
     0 1];
 Q=C'*Qy*C;
 R=eye(2)*0.01;
+R = 0.0000002*[0.01 0;
+     0 100];
 
 if (controller ==2)
   F=dlqr(A,B,Q,R);
