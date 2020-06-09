@@ -9,6 +9,10 @@ u2 = u(:,2);
 y_n1 = noisy_y(:,1);
 y_n2 = noisy_y(:,2);
 
+%Estimator states (In terms of output only)
+y_hat1 = y_hat(:,1);
+y_hat2 = y_hat(:,2)
+
 w1 = x(:,1);
 w2 = x(:,2);
 
@@ -22,14 +26,16 @@ dist2 = dist(:,2);
 
 figure(10)
 subplot(311)
-plot(time, y_n1, 'c', time,y1,'b', 'LineWidth',2)
-grid minor
+plot(time, y_hat1, 'b', time, y_n1, 'c', time,y1,'r', 'LineWidth',2)
+legend('Estimated', 'Noisy', 'Actual');
+grid
 title('Jockey Wheel Speed')
 ylabel('Speed [rad/s]')
 
 subplot(312)
-plot(time, y_n2, 'c', time,y2,'r', 'LineWidth',2)
-grid minor
+plot(time, y_hat2, 'b', time, y_n2, 'c', time,y2,'r', 'LineWidth',2)
+legend('Estimated', 'Noisy', 'Actual');
+grid
 title('Tension Arm Displacement')
 ylabel('Displacement [m]')
 
@@ -38,7 +44,7 @@ plot(time,u1,'b', time, u2, '--r', 'LineWidth',2)
 %axis([0 Tsim -11 11])
 title('Control effort')
 legend('u1', 'u2');
-grid minor
+grid
 ylabel('Voltage [V]')
 
 xlabel('Time [s]')

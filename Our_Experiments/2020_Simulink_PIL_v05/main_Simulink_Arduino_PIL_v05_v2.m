@@ -4,15 +4,15 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true;       % True: To simulate
-Tsim = 1;             % Total Simulation length in seconds.                           
+Tsim = 2;             % Total Simulation length in seconds.                           
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
-noise = 1;
-linear = 1;           % Plant selection
+noise = 0;
+linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -134,7 +134,7 @@ end
  
    if (controller == 4)
       y_star(1,1) = y_star(1,1)*3.075
-      y_star(2,1) = y_star(2,1)*1.236
+      y_star(2,1) = y_star(2,1)*1.05
    end
 
  uss = Nu*y_star;
@@ -156,7 +156,9 @@ if (rank_OM==n)
 
   
    Rf=eye(2);
-   Qf=0.000001*eye(6);
+   Rf=[31.5429 0;
+       0 1.2617e-6];
+   Qf=0.003*eye(6);
    [Pf,po_dt,Kf_t] = dare(A',C',Qf,Rf,[],[]);
    
    if (obs == 2)
