@@ -17,6 +17,9 @@ PIL=1;                %0: Manually start the PIL controller
                       %   after simulation started
                       %1: Automatically start PIL controller 
                       %   from the beginning of the simulation
+                      
+N = 1;                      
+                      
 % Set reference
 y_star = [100 0.02]';
 
@@ -30,6 +33,16 @@ du_offset2 = 0;
 
 w_noise = 0;
 x_noise = 0;
+
+%% Input and State Constraints for MPC
+% not required for LQR
+% change these constraints as required
+umin=[-10000,-1000];
+umax=[10000,1000];
+
+
+xmin=[-10000;-10000;-1000;-10000;-10000;-10000];    %Large number implies no constraint
+xmax=[10000;10000;1000;10000;1000;10000];       %Large number implies no constraint
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
@@ -117,6 +130,8 @@ end
  
  uss = Nu*y_star;
  xss = Nx*y_star;
+ 
+ 
 %% Observer Design
 OM = obsv(Ac, Cc);
 rank_OM=rank(OM);
@@ -143,9 +158,61 @@ else
   L = zeros(2,6);
 end
 
+%% MPC Design
+if(controller == 4)
+    n=6;
+    m=2;
+    [K,P]=dlqr(A,B,Q,R)
+     [QN,RN,W,F,Phi,Lambda] = MPC_matrices(A,B,Q,R,P,N)
+%     QN=rand(N*n,N*n);    
+%     RN=rand(N*m,N*m);
+%     Lambda=rand(N*n,n); 
+%     Phi=rand(N*n,N*m);
+%     W=Phi'*QN*Phi+RN;
+%     W=(W+W')/2; %to ensure symmetry, i.e., W=W'
+%     F=Phi'*QN*Lambda;
+    
+    if (N<1)
+    N=1;
+    end
+    Umax=[];
+    Umin=[];
+    Xmax=[];
+    Xmin=[];
+    for k=1:N
+        Umax=[Umax;umax];
+        Umin=[Umin;umin];
+
+        Xmax=[Xmax;xmax];
+        Xmin=[Xmin;xmin];
+    end
+    
+    
+    %% Inequality constraint  AN*U(k) < bN
+    % This matrix is correct, provided you have properly computed Phi
+    % Therefore, do not change it.
+    INm=eye(N*m);
+    AN=[INm;
+       -INm;
+        Phi;
+       -Phi];
+    % bN must be computed inside the controller
+
+else
+    
+    AN = [1;
+        1;
+        1;
+        1;
+        1;
+        1];
+
+end
+
+
 %% Design SMC
 % Desing surface Cs and switching gain gamma
-F=dlqr(A,B,Q,R);
+
 Cs1=[40 0 0 0 0 0];
 Cs2=[0 0 0 10 0 0];
 Cs=[Cs1;
@@ -154,9 +221,15 @@ CsRank = rank(Cs)
 gamma=0.01;
 Keq=(Cs*B)^-1 * Cs*A;
 Ksw=gamma*(Cs*B)^1;
+
 if(controller == 3)
-    xss = xss;
+    F=dlqr(A,B,Q,R);
 end
+
+
+
+
+
 
 
 %% Start Simulation
