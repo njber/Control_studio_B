@@ -12,7 +12,7 @@ linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 2;       % SFC: 1, LQR: 2, SFCwithIntegral :4;
-%have an option for integral action...
+integralaction = 1;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL = 1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -22,7 +22,7 @@ PIL = 1;                %0: Manually start the PIL controller
 y_star = [100 0.02]';
 
 %% Input and Output Noise/Disturbance
-du1 = 1;     %Enable input disturbace, 5*sin(2*pi*2*t)
+du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
 du2 = 0;
 du_freq1 = 1*pi; %10*pi;
 du_offset1 = pi/2;
@@ -121,57 +121,88 @@ A_aug=[A O_21;
        C O_22];
 B_aug=[B;
        O_B];
+O_C = [0 0;
+    0 0];
+C_aug = [C O_C];
    
    
-Qy=[0.1 0;
+Qy_aug=[0.1 0;
     0 1];
-QL=C'*Qy*C;
-Z  = [0 0 0 0 0 0;
+% Q_aug=C_aug'*Qy_aug*C_aug;
+Z  = [0 0 0 0 0 0; 
     0 0 0 0 0 0];
-X = zeros(2);
-Q_aug = [QL Z';
-    Z X];
+% X = zeros(2);
+% Q_aug = [QL Z';
+%     Z X];
+% Q_aug = eye(8);
+% Q_aug = [0.0086   -0.0165    0.0027   -0.0004   -0.0005   -0.0003 0 0;
+%    -0.0165    0.0349   -0.0057    0.0007    0.0009    0.0005 0 0;
+%     0.0027   -0.0057    0.0009   -0.0001   -0.0002   -0.0001 0 0;
+%    -0.0004    0.0007   -0.0001    0.0000    0.0000    0.0000 0 0;
+%    -0.0005    0.0009   -0.0002    0.0000    0.0000    0.0000 0 0;
+%    -0.0003    0.0005   -0.0001    0.0000    0.0000    0.0000 0 0;
+%    0 0 0 0 0 0 0.001 0
+%    0 0 0 0 0 0 0 0.001];
 
-R=1*eye(2);
+Q_aug = [0.0086 0 0 0 0 0 0 0;
+    0 0.0349 0 0 0 0 0 0;
+    0 0 9.4695e-04 0 0 0 0 0;
+    0 0 0 2.1372e-05 0 0 0 0;
+    0 0 0 0 2.5783e-05 0 0 0;
+    0 0 0 0 0 1.0699e-05 0 0;
+    0 0 0 0 0 0 1000 0;
+    0 0 0 0 0 0 0 1000];
+% Q_aug = 0.000001*eye(8);
+R = 0.001*eye(2);
 % R=[1 0
 %     0 1];
 % QL = eye(8)
 N = [0 0 0 0 0 0 0 0;
-    0 0 0 0 0 0 0 0];
-check = [Q_aug N';
-    N R]
+    0 0 0 0 0 0 0 0]';
+check = [Q_aug N;
+    N' R];
     
-   
+try chol(check)
+    disp('Matrix is symmetric positive definite.')
+catch ME
+    disp('Matrix is not symmetric positive definite')
+end
+
  %% SFC for augmented system
 p3=[-0.8 -1 -1.2 -1.4 -1.6 -1.8 -2 -2.2]*5;
 
 % K_aug=place(A_aug,B_aug,p3);
 % [Ki,S,CLP] = lqi(sys_dt,Q_aug,R);
-F=dlqr(A,B,Q,R);
-% Fi=K_aug(1:2);
-a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)];
-b = [K_aug(2) K_aug(4) K_aug(6) K_aug(8) K_aug(10) K_aug(12)];
-Fi = [a;
-    b];
+if(integralaction==1)
+    K_aug=dlqr(A_aug,B_aug,Q_aug,R);
+    % Fi=K_aug(1:2);
+    a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)];
+    b = [K_aug(2) K_aug(4) K_aug(6) K_aug(8) K_aug(10) K_aug(12)];
+    Fi = [a;
+        b];
 % Fi=K_aug(1:12);
 % Ki=K_aug(3);
 
-Ki=[K_aug(13) K_aug(15);
-    K_aug(14) K_aug(16)];
+    Ki=[K_aug(13) K_aug(15);
+        K_aug(14) K_aug(16)];
+else
+    Fi=0;
+    Ki=0;
+end
+
 
 
 %% LQR Controller Design
 Qy=[0.1 0;
     0 1];
 Q=C'*Qy*C;
+% Q=0.0001*eye(6);
 R=1*eye(2);
 
 if(controller==2)
     F=dlqr(A,B,Q,R);
 end
-if(controller==4)
-    F=dlqr(A,B,Q,R);
-end
+
 
 
 % [K,S,e] = lqi(SYS,Q,R,N); %LQI controller

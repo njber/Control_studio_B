@@ -19,15 +19,19 @@ dist2 = dist(:,2);
 figure(10)
 subplot(311)
 plot(time,y1,'b', 'LineWidth',2)
+refline([0 y_star(1)])
 grid minor
 title('Jockey Wheel Speed')
 ylabel('Speed [rad/s]')
 
 subplot(312)
 plot(time,y2,'r', 'LineWidth',2)
+refline([0 y_star(2)])
 grid minor
 title('Tension Arm Displacement')
 ylabel('Displacement [m]')
+
+
 
 subplot(313)
 plot(time,u1,'b', time, u2, '--r', 'LineWidth',2)
