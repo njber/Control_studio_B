@@ -5,6 +5,10 @@ y2 = y(:,2);
 u1 = u(:,1);
 u2 = u(:,2);
 
+%Noisy Outputs
+y_n1 = noisy_y(:,1);
+y_n2 = noisy_y(:,2);
+
 w1 = x(:,1);
 w2 = x(:,2);
 
@@ -18,13 +22,13 @@ dist2 = dist(:,2);
 
 figure(10)
 subplot(311)
-plot(time,y1,'b', 'LineWidth',2)
+plot(time, y_n1, 'c', time,y1,'b', 'LineWidth',2)
 grid minor
 title('Jockey Wheel Speed')
 ylabel('Speed [rad/s]')
 
 subplot(312)
-plot(time,y2,'r', 'LineWidth',2)
+plot(time, y_n2, 'c', time,y2,'r', 'LineWidth',2)
 grid minor
 title('Tension Arm Displacement')
 ylabel('Displacement [m]')

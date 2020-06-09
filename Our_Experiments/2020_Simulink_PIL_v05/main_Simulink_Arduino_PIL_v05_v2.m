@@ -8,10 +8,11 @@ Tsim = 5;             % Total Simulation length in seconds.
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
-linear = 1;           % Plant selection
+linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 3;       % SFC: 1, LQR: 2, SMC: 3
+noise = 2;            % Enable sensor noise
+controller = 2;       % SFC: 1, LQR: 2, SMC: 3
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -28,8 +29,10 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-w_noise = 0;
-x_noise = 0;
+if (noise == 1)
+  w_noise = 0.4*100; %*y_star(1)
+  x_noise = 0.002*0.02;% *y_star(2)
+end
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
@@ -104,7 +107,7 @@ end
 Qy=[0.1 0;
     0 1];
 Q=C'*Qy*C;
-R=1*eye(2);
+R=eye(2)*0.01;
 
 if (controller ==2)
   F=dlqr(A,B,Q,R);
@@ -132,7 +135,7 @@ if (rank_OM==n)
 
   
    Rf=eye(2);
-   Qf=0.000001*eye(6);
+   Qf=0.001*eye(6);
    [Pf,po_dt,Kf_t] = dare(A',C',Qf,Rf,[],[]);
    
    if (obs == 2)
