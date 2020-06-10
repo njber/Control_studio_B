@@ -8,6 +8,7 @@ Tsim = 0.6;             % Total Simulation length in seconds.
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
+noise = 1;
 linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
@@ -18,10 +19,10 @@ PIL=1;                %0: Manually start the PIL controller
                       %1: Automatically start PIL controller 
                       %   from the beginning of the simulation
                       
-N = 5;                      
+N = 10;                      
                       
 % Set reference
-y_star = [100 0.02]';
+y_star = [50 0.015]';
 
 %% Input and Output Noise/Disturbance
 du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
