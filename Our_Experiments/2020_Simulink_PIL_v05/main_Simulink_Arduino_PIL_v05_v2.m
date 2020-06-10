@@ -4,21 +4,21 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true;       % True: To simulate
-Tsim = 5;             % Total Simulation length in seconds.                           
+Tsim = 0.6;             % Total Simulation length in seconds.                           
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
 linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 3;       % SFC: 1, LQR: 2, SMC: 3
+controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
                       %   from the beginning of the simulation
                       
-N = 1;                      
+N = 5;                      
                       
 % Set reference
 y_star = [100 0.02]';
@@ -37,12 +37,13 @@ x_noise = 0;
 %% Input and State Constraints for MPC
 % not required for LQR
 % change these constraints as required
-umin=[-10000,-1000];
-umax=[10000,1000];
+value = 300;
+umin=[-value,-value]';
+umax=[value,value]';
 
-
-xmin=[-10000;-10000;-1000;-10000;-10000;-10000];    %Large number implies no constraint
-xmax=[10000;10000;1000;10000;1000;10000];       %Large number implies no constraint
+value2 = 10000
+xmin=[-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
+xmax=[value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
@@ -114,10 +115,10 @@ if (controller == 1)
 end
 
 % LQR Controller Design
-Qy=[0.1 0;
+Qy=[1 0;
     0 1];
 Q=C'*Qy*C;
-R=1*eye(2);
+R=0.0000001*eye(2);
 
 if (controller ==2)
   F=dlqr(A,B,Q,R);
@@ -128,6 +129,11 @@ end
  Nu = Mo^-1;
  Nx = -(Ac^-1)*Bc*Nu;
  
+  if (controller == 4)
+     y_star(1,1) = y_star(1,1)*3.1
+     y_star(2,1) = y_star(2,1)*1.03
+  end
+
  uss = Nu*y_star;
  xss = Nx*y_star;
  
@@ -162,15 +168,9 @@ end
 if(controller == 4)
     n=6;
     m=2;
-    [K,P]=dlqr(A,B,Q,R)
-     [QN,RN,W,F,Phi,Lambda] = MPC_matrices(A,B,Q,R,P,N)
-%     QN=rand(N*n,N*n);    
-%     RN=rand(N*m,N*m);
-%     Lambda=rand(N*n,n); 
-%     Phi=rand(N*n,N*m);
-%     W=Phi'*QN*Phi+RN;
-%     W=(W+W')/2; %to ensure symmetry, i.e., W=W'
-%     F=Phi'*QN*Lambda;
+    [K,P]=dlqr(A,B,Q,R);
+    [W,F,Phi,Lambda] = MPC_matrices(A,B,Q,R,P,N);
+
     
     if (N<1)
     N=1;
@@ -192,7 +192,7 @@ if(controller == 4)
     % This matrix is correct, provided you have properly computed Phi
     % Therefore, do not change it.
     INm=eye(N*m);
-    AN=[INm;
+    aN=[INm;
        -INm;
         Phi;
        -Phi];
@@ -200,13 +200,14 @@ if(controller == 4)
 
 else
     
-    AN = [1;
-        1;
-        1;
-        1;
-        1;
-        1];
-
+%     aN = [1;
+%         1;
+%         1;
+%         1;
+%         1;
+%         1];
+%     Lambda=rand(N*n,n);
+%     [K,P]=dlqr(A,B,Q,R)
 end
 
 
