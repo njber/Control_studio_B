@@ -25,20 +25,20 @@ dist1 = dist(:,1);
 dist2 = dist(:,2);
 
 %refline variables
-ref = 1; % on or off
-reference = 10; %10 = 10%; 5 = 5%
+ref = 0; % on or off
+reference = 5; %10 = 10%; 5 = 5%
 if(reference==10)
-    y1_p = y_ref(1) * 1.1 % +10%
-    y1_m = y_ref(1) * 0.9 % -10%
+    y1_p = y_ref(1) * 1.1; % +10%
+    y1_m = y_ref(1) * 0.9; % -10%
 
-    y2_p = y_ref(2) * 1.1 % +10%
-    y2_m = y_ref(2) * 0.9 % -10%
+    y2_p = y_ref(2) * 1.1; % +10%
+    y2_m = y_ref(2) * 0.9; % -10%
 elseif(reference==5)
-    y1_p = y_ref(1) * 1.05 % +5%
-    y1_m = y_ref(1) * 0.95 % -5%
+    y1_p = y_ref(1) * 1.05; % +5%
+    y1_m = y_ref(1) * 0.95; % -5%
 
-    y2_p = y_ref(2) * 1.105 % +5%
-    y2_m = y_ref(2) * 0.95 % -5%
+    y2_p = y_ref(2) * 1.105; % +5%
+    y2_m = y_ref(2) * 0.95; % -5%
 end
 
 figure(10)
