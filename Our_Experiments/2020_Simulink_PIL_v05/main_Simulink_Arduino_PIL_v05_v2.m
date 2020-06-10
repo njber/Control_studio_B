@@ -12,7 +12,8 @@ noise = 0;
 linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+integralaction = 0;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -34,6 +35,9 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
+du1_bias = 0; %DC bias for sinusoidal input
+du2_bias = 0; %DC bias for sinusoidal input
+
 w_noise = 0;
 x_noise = 0;
 
@@ -44,7 +48,7 @@ value = 300;
 umin=[-value,-value]';
 umax=[value,value]';
 
-value2 = 10000
+value2 = 10000;
 xmin=[-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
 xmax=[value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
@@ -96,6 +100,46 @@ Ac = sys_ct.A;
 Bc = sys_ct.B;
 Cc = sys_ct.C;
 
+%% Augmented System for integral action
+O_21 = [0 0 0 0 0 0;
+    0 0 0 0 0 0]';
+O_22 = eye(2);
+O_B = [0 0;
+    0 0];
+A_aug=[A O_21; 
+       C O_22];
+B_aug=[B;
+       O_B];
+O_C = [0 0;
+    0 0];
+C_aug = [C O_C];
+   
+Qy_aug=[0.1 0;
+    0 1];
+
+Q_aug = [0.0086 0 0 0 0 0 0 0;
+    0 0.0349 0 0 0 0 0 0;
+    0 0 9.4695e-04 0 0 0 0 0;
+    0 0 0 2.1372e-05 0 0 0 0;
+    0 0 0 0 2.5783e-05 0 0 0;
+    0 0 0 0 0 1.0699e-05 0 0;
+    0 0 0 0 0 0 10000 0;
+    0 0 0 0 0 0 0 10000];
+
+R_aug = 0.001*eye(2);
+
+% N = [0 0 0 0 0 0 0 0;
+%     0 0 0 0 0 0 0 0]';
+% check = [Q_aug N;
+%     N' R];
+%     
+% try chol(check)
+%     disp('Matrix is symmetric positive definite.')
+% catch ME
+%     disp('Matrix is not symmetric positive definite')
+% end
+
+
 %% Controller Design
 
 % Controller 1 : Poles
@@ -117,6 +161,20 @@ if (controller == 1)
   F=place(A, B, Pz);
 end
 
+
+% LQR for augmented system
+p3=[-0.8 -1 -1.2 -1.4 -1.6 -1.8 -2 -2.2]*5;
+
+K_aug=dlqr(A_aug,B_aug,Q_aug,R_aug);
+
+a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)];
+b = [K_aug(2) K_aug(4) K_aug(6) K_aug(8) K_aug(10) K_aug(12)];
+Fi = [a;
+    b];
+
+Ki=[K_aug(13) K_aug(15);
+    K_aug(14) K_aug(16)];
+
 % LQR Controller Design
 Qy=[1 0;
     0 1];
@@ -134,7 +192,7 @@ end
  
    if (controller == 4)
       y_star(1,1) = y_star(1,1)*3.075
-      y_star(2,1) = y_star(2,1)*1.05
+      y_star(2,1) = y_star(2,1)*1.28
    end
 
  uss = Nu*y_star;
