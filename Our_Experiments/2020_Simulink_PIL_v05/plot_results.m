@@ -47,46 +47,57 @@ end
 
 figure(10)
 subplot(311)
-plot(time, y_hat1, 'b', time, y_n1, 'c', time,y1,'r', 'LineWidth',2)
-legend('Estimated', 'Noisy', 'Actual');
+plot(time, y_hat1, 'b', time, y_n1, 'c', time,y1,'r', 'LineWidth',1.2)
+legend('$\hat{\omega}$', 'noisy $\omega$', '$\omega$','fontsize',16,'interpreter','latex');
 if(ref==1)
     yline(y1_p,'--')
     yline(y1_m,'--')
 end
+set(gca,'GridLineStyle','--')
 grid
 title('Jockey Wheel Speed')
-ylabel('Speed [rad/s]')
+ylabel('Speed (rad/s)','fontsize',16,'interpreter','latex')
 
 subplot(312)
-plot(time, y_hat2, 'b', time, y_n2, 'c', time,y2,'r', 'LineWidth',2)
-legend('Estimated', 'Noisy', 'Actual');
+plot(time, y_hat2*1000, 'b', time, y_n2*1000, 'c', time,y2*1000,'r', 'LineWidth',1.2)
+legend('$\hat{x}$', 'noisy $x$', '$x$','fontsize',16,'interpreter','latex');
 if(ref==1)
     yline(y2_p,'--')
     yline(y2_m,'--')
 end
+set(gca,'GridLineStyle','--')
 grid
 title('Tension Arm Displacement')
-ylabel('Displacement [m]')
+ylabel('Displacement $(mm)$','fontsize',16,'interpreter','latex')
 
 subplot(313)
-plot(time,u1,'b', time, u2, '--r', 'LineWidth',2)
+plot(time,u1,'b', time, u2, 'r', 'LineWidth',1.2)
 %axis([0 Tsim -11 11])
 title('Control effort')
-legend('u1', 'u2');
+legend('$u_1$', '$u_2$','fontsize',16,'interpreter','latex');
+set(gca,'GridLineStyle','--')
 grid
-ylabel('Torque [N]')
+ylabel('Torque $(N)$','fontsize',16,'interpreter','latex')
 
-xlabel('Time [s]')
+xlabel('Time (s)','fontsize',16,'interpreter','latex')
 
 %% Plot Voltage ranges
 figure(12)
 subplot(211)
-plot(time, u_v1, 'r', time, u_v2, 'b');
-legend('u1', 'u2');
+plot(time, u_v1, 'r', time, u_v2, 'b','LineWidth',1.2);
+legend('$u_1$', '$u_2$','fontsize',16,'interpreter','latex');
+set(gca,'GridLineStyle','--')
+grid on
+title('Control Effor & Sensor Voltages')
+ylabel('Voltage $(V)$','fontsize',16,'interpreter','latex')
 
 subplot(212)
-plot(time, y_v1, 'r', time, y_v2, 'b');
-legend('w', 'x');
+plot(time, y_v1, 'r', time, y_v2, 'b','LineWidth',1.2);
+legend('$\omega$', '$x$','fontsize',16,'interpreter','latex');
+set(gca,'GridLineStyle','--')
+grid on
+xlabel('Time (s)','fontsize',16,'interpreter','latex')
+ylabel('Voltage $(V)$','fontsize',16,'interpreter','latex')
 
 
 %% Input Disturbance

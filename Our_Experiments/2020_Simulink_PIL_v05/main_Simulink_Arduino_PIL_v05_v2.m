@@ -8,7 +8,7 @@ Tsim = 5;             % Total Simulation length in seconds.
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
-noise = 0;
+noise = 0;            % Aplies +-10% noise per unit for w =100 and x = 0.02
 linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
