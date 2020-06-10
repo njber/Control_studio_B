@@ -4,7 +4,7 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true;       % True: To simulate
-Tsim = 0.6;             % Total Simulation length in seconds.                           
+Tsim = 1;             % Total Simulation length in seconds.                           
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
@@ -22,7 +22,9 @@ PIL=1;                %0: Manually start the PIL controller
 N = 10;                      
                       
 % Set reference
-y_star = [50 0.015]';
+y_star = [100 0.02]';
+
+F = zeros(2,6);
 
 %% Input and Output Noise/Disturbance
 du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
@@ -119,7 +121,7 @@ end
 Qy=[1 0;
     0 1];
 Q=C'*Qy*C;
-R=0.0000001*eye(2);
+R=0.00001*eye(2);
 
 if (controller ==2)
   F=dlqr(A,B,Q,R);
@@ -130,10 +132,10 @@ end
  Nu = Mo^-1;
  Nx = -(Ac^-1)*Bc*Nu;
  
-  if (controller == 4)
-     y_star(1,1) = y_star(1,1)*3.1
-     y_star(2,1) = y_star(2,1)*1.03
-  end
+   if (controller == 4)
+      y_star(1,1) = y_star(1,1)*3.075
+      y_star(2,1) = y_star(2,1)*1.236
+   end
 
  uss = Nu*y_star;
  xss = Nx*y_star;
@@ -166,50 +168,38 @@ else
 end
 
 %% MPC Design
-if(controller == 4)
-    n=6;
-    m=2;
-    [K,P]=dlqr(A,B,Q,R);
-    [W,F,Phi,Lambda] = MPC_matrices(A,B,Q,R,P,N);
+n=6;
+m=2;
+[K,P]=dlqr(A,B,Q,R);
+[W,Fm,Phi,Lambda] = MPC_matrices(A,B,Q,R,P,N);
 
-    
-    if (N<1)
-    N=1;
-    end
-    Umax=[];
-    Umin=[];
-    Xmax=[];
-    Xmin=[];
-    for k=1:N
-        Umax=[Umax;umax];
-        Umin=[Umin;umin];
 
-        Xmax=[Xmax;xmax];
-        Xmin=[Xmin;xmin];
-    end
-    
-    
-    %% Inequality constraint  AN*U(k) < bN
-    % This matrix is correct, provided you have properly computed Phi
-    % Therefore, do not change it.
-    INm=eye(N*m);
-    aN=[INm;
-       -INm;
-        Phi;
-       -Phi];
-    % bN must be computed inside the controller
-
-else
-    
-%     aN = [1;
-%         1;
-%         1;
-%         1;
-%         1;
-%         1];
-%     Lambda=rand(N*n,n);
-%     [K,P]=dlqr(A,B,Q,R)
+if (N<1)
+N=1;
 end
+Umax=[];
+Umin=[];
+Xmax=[];
+Xmin=[];
+for k=1:N
+    Umax=[Umax;umax];
+    Umin=[Umin;umin];
+
+    Xmax=[Xmax;xmax];
+    Xmin=[Xmin;xmin];
+end
+
+
+
+%% Inequality constraint  AN*U(k) < bN
+% This matrix is correct, provided you have properly computed Phi
+% Therefore, do not change it.
+INm=eye(N*m);
+aN=[INm;
+   -INm;
+    Phi;
+   -Phi];
+% bN must be computed inside the controller
 
 
 %% Design SMC
