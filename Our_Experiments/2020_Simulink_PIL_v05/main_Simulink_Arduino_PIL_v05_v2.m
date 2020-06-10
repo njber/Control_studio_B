@@ -4,20 +4,22 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true;       % True: To simulate
-Tsim = 5;             % Total Simulation length in seconds.                           
+Tsim = 0.6;             % Total Simulation length in seconds.                           
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
-linear = 0;           % Plant selection
+linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-noise = 1;            % Enable sensor noise
-controller = 2;       % SFC: 1, LQR: 2, SMC: 3
+controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
                       %   from the beginning of the simulation
+                      
+N = 5;                      
+                      
 % Set reference
 y_star = [100 0.02]';
 
@@ -29,10 +31,19 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-if (noise == 1)
-  w_noise = 0.4*100; %*y_star(1)
-  x_noise = 0.002*0.02;% *y_star(2)
-end
+w_noise = 0;
+x_noise = 0;
+
+%% Input and State Constraints for MPC
+% not required for LQR
+% change these constraints as required
+value = 300;
+umin=[-value,-value]';
+umax=[value,value]';
+
+value2 = 10000
+xmin=[-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
+xmax=[value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
@@ -107,9 +118,7 @@ end
 Qy=[1 0;
     0 1];
 Q=C'*Qy*C;
-R=eye(2)*0.01;
-R = 0.0000002*[0.01 0;
-     0 100];
+R=0.0000001*eye(2);
 
 if (controller ==2)
   F=dlqr(A,B,Q,R);
@@ -120,8 +129,15 @@ end
  Nu = Mo^-1;
  Nx = -(Ac^-1)*Bc*Nu;
  
+  if (controller == 4)
+     y_star(1,1) = y_star(1,1)*3.1
+     y_star(2,1) = y_star(2,1)*1.03
+  end
+
  uss = Nu*y_star;
  xss = Nx*y_star;
+ 
+ 
 %% Observer Design
 OM = obsv(Ac, Cc);
 rank_OM=rank(OM);
@@ -137,7 +153,7 @@ if (rank_OM==n)
 
   
    Rf=eye(2);
-   Qf=0.001*eye(6);
+   Qf=0.000001*eye(6);
    [Pf,po_dt,Kf_t] = dare(A',C',Qf,Rf,[],[]);
    
    if (obs == 2)
@@ -148,9 +164,56 @@ else
   L = zeros(2,6);
 end
 
+%% MPC Design
+if(controller == 4)
+    n=6;
+    m=2;
+    [K,P]=dlqr(A,B,Q,R);
+    [W,F,Phi,Lambda] = MPC_matrices(A,B,Q,R,P,N);
+
+    
+    if (N<1)
+    N=1;
+    end
+    Umax=[];
+    Umin=[];
+    Xmax=[];
+    Xmin=[];
+    for k=1:N
+        Umax=[Umax;umax];
+        Umin=[Umin;umin];
+
+        Xmax=[Xmax;xmax];
+        Xmin=[Xmin;xmin];
+    end
+    
+    
+    %% Inequality constraint  AN*U(k) < bN
+    % This matrix is correct, provided you have properly computed Phi
+    % Therefore, do not change it.
+    INm=eye(N*m);
+    aN=[INm;
+       -INm;
+        Phi;
+       -Phi];
+    % bN must be computed inside the controller
+
+else
+    
+%     aN = [1;
+%         1;
+%         1;
+%         1;
+%         1;
+%         1];
+%     Lambda=rand(N*n,n);
+%     [K,P]=dlqr(A,B,Q,R)
+end
+
+
 %% Design SMC
 % Desing surface Cs and switching gain gamma
-F=dlqr(A,B,Q,R);
+
 Cs1=[40 0 0 0 0 0];
 Cs2=[0 0 0 10 0 0];
 Cs=[Cs1;
@@ -159,9 +222,15 @@ CsRank = rank(Cs)
 gamma=0.01;
 Keq=(Cs*B)^-1 * Cs*A;
 Ksw=gamma*(Cs*B)^1;
+
 if(controller == 3)
-    xss = xss;
+    F=dlqr(A,B,Q,R);
 end
+
+
+
+
+
 
 
 %% Start Simulation
