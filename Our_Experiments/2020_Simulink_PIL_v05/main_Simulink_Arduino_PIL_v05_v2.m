@@ -24,6 +24,7 @@ N = 10;
                       
 % Set reference
 y_star = [100 0.02]';
+y_ref = [y_star(1) y_star(2)]';
 
 F = zeros(2,6);
 
