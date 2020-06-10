@@ -28,6 +28,11 @@ y_ref = [y_star(1) y_star(2)]';
 
 F = zeros(2,6);
 
+%% Data visualisation
+%refline variables
+ref = 1; % reference tolerance band on or off
+reference = 5; %10 = 10%; 5 = 5%
+
 %% Input and Output Noise/Disturbance
 du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
 du2 = 0;
