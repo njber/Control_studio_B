@@ -12,8 +12,8 @@ noise = 0;
 linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
-integralaction = 0;    % on:1; off:0
+controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+integralaction = 1;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -33,6 +33,10 @@ F = zeros(2,6);
 ref = 1; % reference tolerance band on or off
 reference = 5; %10 = 10%; 5 = 5%
 
+%wishlist:
+% export matlab figures as eps
+% title on graph depending on controller
+
 %% Input and Output Noise/Disturbance
 du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
 du2 = 0;
@@ -41,8 +45,8 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-du1_bias = 0; %DC bias for sinusoidal input
-du2_bias = 0; %DC bias for sinusoidal input
+du1_bias = 5; %DC bias for sinusoidal input
+du2_bias = 5; %DC bias for sinusoidal input
 
 w_noise = 0;
 x_noise = 0;
@@ -159,7 +163,8 @@ s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
 Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
 Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*3;
-  
+
+
 % Discrete EigenValues
 Pz = exp(Pc*Ts);
 
@@ -169,9 +174,22 @@ end
 
 
 % LQR for augmented system
-p3=[-0.8 -1 -1.2 -1.4 -1.6 -1.8 -2 -2.2]*5;
+if(controller==1)
+%     p3 = [-0.8 -1 -1.2 -1.4 -1.6 -1.8 1 1]*3;
+   p3=2*[  -0.9778 + 0.0000i;
+  -0.7865 + 0.3489i;
+  -0.7865 - 0.3489i;
+  -0.6418 + 0.0770i;
+  -0.6418 - 0.0770i;
+  -0.0313 + 0.0000i;
+   0.0001 + 0.0000i;
+  -0.0000 + 0.0000i]';
 
-K_aug=dlqr(A_aug,B_aug,Q_aug,R_aug);
+    K_aug=place(A_aug, B_aug, p3);
+
+elseif(controller==2)
+    K_aug=dlqr(A_aug,B_aug,Q_aug,R_aug);
+end
 
 a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)]; % option here to tidy up (Nick)
 b = [K_aug(2) K_aug(4) K_aug(6) K_aug(8) K_aug(10) K_aug(12)];
