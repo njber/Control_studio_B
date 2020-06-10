@@ -8,7 +8,7 @@ Tsim = 5;             % Total Simulation length in seconds.
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
-linear = 1;           % Plant selection
+linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 2;       % SFC: 1, LQR: 2, SFCwithIntegral :4;
@@ -31,8 +31,8 @@ du_offset2 = 0;
 
 U_dist = 1; %??
 
-u1_bias = 0;
-u2_bias = 0;
+u1_bias = 10;
+u2_bias = 10;
 
 w_noise = 0; % process noise
 x_noise = 0; % measurment noise
@@ -150,8 +150,8 @@ Q_aug = [0.0086 0 0 0 0 0 0 0;
     0 0 0 2.1372e-05 0 0 0 0;
     0 0 0 0 2.5783e-05 0 0 0;
     0 0 0 0 0 1.0699e-05 0 0;
-    0 0 0 0 0 0 1000 0;
-    0 0 0 0 0 0 0 1000];
+    0 0 0 0 0 0 10000 0;
+    0 0 0 0 0 0 0 10000];
 % Q_aug = 0.000001*eye(8);
 R = 0.001*eye(2);
 % R=[1 0
