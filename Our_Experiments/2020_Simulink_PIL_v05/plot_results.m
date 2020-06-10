@@ -13,6 +13,12 @@ y_n2 = noisy_y(:,2);
 y_hat1 = y_hat(:,1);
 y_hat2 = y_hat(:,2)
 
+%Sensor and Controller Voltages
+u_v1 = u_v(:,1);
+u_v2 = u_v(:,2);
+y_v1 = y_v(:,1);
+y_v2 = y_v(:,2);
+
 w1 = x(:,1);
 w2 = x(:,2);
 
@@ -68,9 +74,19 @@ plot(time,u1,'b', time, u2, '--r', 'LineWidth',2)
 title('Control effort')
 legend('u1', 'u2');
 grid
-ylabel('Voltage [V]')
+ylabel('Torque [N]')
 
 xlabel('Time [s]')
+
+%% Plot Voltage ranges
+figure(12)
+subplot(211)
+plot(time, u_v1, 'r', time, u_v2, 'b');
+legend('u1', 'u2');
+
+subplot(212)
+plot(time, y_v1, 'r', time, y_v2, 'b');
+legend('w', 'x');
 
 
 %% Input Disturbance

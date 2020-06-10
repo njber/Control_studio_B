@@ -4,7 +4,7 @@ simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
 %% Simulation Settings
 simulate= true;       % True: To simulate
-Tsim = 2;             % Total Simulation length in seconds.                           
+Tsim = 5;             % Total Simulation length in seconds.                           
 fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
@@ -12,7 +12,7 @@ noise = 0;
 linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
 integralaction = 0;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
@@ -34,7 +34,7 @@ ref = 1; % reference tolerance band on or off
 reference = 5; %10 = 10%; 5 = 5%
 
 %% Input and Output Noise/Disturbance
-du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
+du1 = 0;     %Enable input disturbace
 du2 = 0;
 du_freq1 = 10*pi;
 du_offset1 = pi/2;
@@ -61,6 +61,8 @@ xmax=[value2;value2;value2;value2;value2;value2];       %Large number implies no
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
 G = 30; %amplifier/motor voltage to torque gain.
+w_gain = 1/100;
+x_gain = 100;
            
                 
 %% Initial Condition
@@ -222,7 +224,7 @@ if (rank_OM==n)
    Rf=eye(2);
    Rf=[31.5429 0;
        0 1.2617e-6];
-   Qf=0.003*eye(6);
+   Qf=0.005*eye(6);
    [Pf,po_dt,Kf_t] = dare(A',C',Qf,Rf,[],[]);
    
    if (obs == 2)
@@ -271,7 +273,7 @@ aN=[INm;
 %% Design SMC
 % Desing surface Cs and switching gain gamma
 
-Cs1=[40 0 0 0 0 0];
+Cs1=[41 0 0 0 0 0.1];
 Cs2=[0 0 0 10 0 0];
 Cs=[Cs1;
     Cs2];
