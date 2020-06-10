@@ -24,10 +24,29 @@ ug2 = u_gain(:,2);
 dist1 = dist(:,1);
 dist2 = dist(:,2);
 
+
+if(reference==10)
+    y1_p = y_ref(1) * 1.1; % +10%
+    y1_m = y_ref(1) * 0.9; % -10%
+
+    y2_p = y_ref(2) * 1.1; % +10%
+    y2_m = y_ref(2) * 0.9; % -10%
+elseif(reference==5)
+    y1_p = y_ref(1) * 1.05; % +5%
+    y1_m = y_ref(1) * 0.95; % -5%
+
+    y2_p = y_ref(2) * 1.105; % +5%
+    y2_m = y_ref(2) * 0.95; % -5%
+end
+
 figure(10)
 subplot(311)
 plot(time, y_hat1, 'b', time, y_n1, 'c', time,y1,'r', 'LineWidth',2)
 legend('Estimated', 'Noisy', 'Actual');
+if(ref==1)
+    yline(y1_p,'--')
+    yline(y1_m,'--')
+end
 grid
 title('Jockey Wheel Speed')
 ylabel('Speed [rad/s]')
@@ -35,6 +54,10 @@ ylabel('Speed [rad/s]')
 subplot(312)
 plot(time, y_hat2, 'b', time, y_n2, 'c', time,y2,'r', 'LineWidth',2)
 legend('Estimated', 'Noisy', 'Actual');
+if(ref==1)
+    yline(y2_p,'--')
+    yline(y2_m,'--')
+end
 grid
 title('Tension Arm Displacement')
 ylabel('Displacement [m]')

@@ -24,8 +24,14 @@ N = 10;
                       
 % Set reference
 y_star = [100 0.02]';
+y_ref = [y_star(1) y_star(2)]';
 
 F = zeros(2,6);
+
+%% Data visualisation
+%refline variables
+ref = 1; % reference tolerance band on or off
+reference = 5; %10 = 10%; 5 = 5%
 
 %% Input and Output Noise/Disturbance
 du1 = 0;     %Enable input disturbace, 5*sin(2*pi*2*t)
@@ -167,7 +173,7 @@ p3=[-0.8 -1 -1.2 -1.4 -1.6 -1.8 -2 -2.2]*5;
 
 K_aug=dlqr(A_aug,B_aug,Q_aug,R_aug);
 
-a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)];
+a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)]; % option here to tidy up (Nick)
 b = [K_aug(2) K_aug(4) K_aug(6) K_aug(8) K_aug(10) K_aug(12)];
 Fi = [a;
     b];
