@@ -35,7 +35,7 @@ elseif(reference==5)
     y1_p = y_ref(1) * 1.05; % +5%
     y1_m = y_ref(1) * 0.95; % -5%
 
-    y2_p = y_ref(2) * 1.105; % +5%
+    y2_p = y_ref(2) * 1.05; % +5%
     y2_m = y_ref(2) * 0.95; % -5%
 end
 

@@ -9,10 +9,10 @@ fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
 noise = 0;
-linear = 0;           % Plant selection
+linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
 integralaction = 1;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
@@ -45,8 +45,8 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-du1_bias = 5; %DC bias for sinusoidal input
-du2_bias = 5; %DC bias for sinusoidal input
+du1_bias = 0; %DC bias for sinusoidal input
+du2_bias = 0; %DC bias for sinusoidal input
 
 w_noise = 0;
 x_noise = 0;
@@ -127,7 +127,20 @@ C_aug = [C O_C];
 Qy_aug=[0.1 0;
     0 1];
 
-Q_aug = [0.0086 0 0 0 0 0 0 0;
+add_zero = [0 0;
+    0 0;
+    0 0;
+    0 0;
+    0 0;
+    0 0];
+Q_tune = 10000* eye(2); %
+Qy=[1 0;
+    0 1];
+Q=C'*Qy*C;%
+Q_aug = [Q add_zero; %
+    add_zero' Q_tune]; %
+
+Q_aug2 = [0.0086 0 0 0 0 0 0 0;
     0 0.0349 0 0 0 0 0 0;
     0 0 9.4695e-04 0 0 0 0 0;
     0 0 0 2.1372e-05 0 0 0 0;
@@ -161,7 +174,7 @@ wn=-log(sqrt(1-zeta^2))/(zeta*tsettle)
 % Dominant second order poles
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
-Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
+Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))];
 Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*3;
 
 
@@ -175,15 +188,15 @@ end
 
 % LQR for augmented system
 if(controller==1)
-%     p3 = [-0.8 -1 -1.2 -1.4 -1.6 -1.8 1 1]*3;
-   p3=2*[  -0.9778 + 0.0000i;
-  -0.7865 + 0.3489i;
-  -0.7865 - 0.3489i;
-  -0.6418 + 0.0770i;
-  -0.6418 - 0.0770i;
-  -0.0313 + 0.0000i;
-   0.0001 + 0.0000i;
-  -0.0000 + 0.0000i]';
+    p3 = [-0.8 -1 -1.2 -1.4 -1.6 -1.8 0 0]*3;
+%    p3=[  -0.9778 + 0.0000i;
+%   -0.7865 + 0.3489i;
+%   -0.7865 - 0.3489i;
+%   -0.6418 + 0.0770i;
+%   -0.6418 - 0.0770i;
+%   -0.0313 + 0.0000i;
+%    0.0001 + 0.0000i;
+%   -0.0001 + 0.0000i]';
 
     K_aug=place(A_aug, B_aug, p3);
 
@@ -215,8 +228,8 @@ end
  Nx = -(Ac^-1)*Bc*Nu;
  
    if (controller == 4)
-      y_star(1,1) = y_star(1,1)*3.075
-      y_star(2,1) = y_star(2,1)*1.28
+      y_star(1,1) = y_star(1,1)*3.075;
+      y_star(2,1) = y_star(2,1)*1.28;
    end
 
  uss = Nu*y_star;
