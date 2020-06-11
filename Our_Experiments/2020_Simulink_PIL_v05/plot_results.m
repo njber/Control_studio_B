@@ -11,7 +11,7 @@ y_n2 = noisy_y(:,2);
 
 %Estimator states (In terms of output only)
 y_hat1 = y_hat(:,1);
-y_hat2 = y_hat(:,2)
+y_hat2 = y_hat(:,2);
 
 %Sensor and Controller Voltages
 u_v1 = u_v(:,1);

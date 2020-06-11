@@ -59,17 +59,18 @@ value = 300;
 umin=[-value,-value]';
 umax=[value,value]';
 
-% Cinv = (C'*C)*C';
-% 
-% ymax = [120 0.03]';
-% ymin = -1*[120 0.03]';
-% 
-% xmin = [(Cinv*ymax)' 100000 100000]; 
-% xmax = [(Cinv*ymax)' 100000 100000];
+Cinv = ((C'*C)^-1)*C';
+%Cinv = C'*((C*C')^-1);
 
-value2 = 100;
-xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
-xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
+ymax = [120 0.03]';
+ymin = -1*[120 0.03]';
+
+xmin = [10*(Cinv*ymin); -100000; -100000]; 
+xmax = [10*(Cinv*ymax); 100000; 100000];
+
+% value2 = 1000;
+% xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
+% xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
@@ -141,10 +142,10 @@ Q_aug = [0.0086 0 0 0 0 0 0 0;
     0 0 0 2.1372e-05 0 0 0 0;
     0 0 0 0 2.5783e-05 0 0 0;
     0 0 0 0 0 1.0699e-05 0 0;
-    0 0 0 0 0 0 100000 0;
-    0 0 0 0 0 0 0 100000];
+    0 0 0 0 0 0 10000 0;
+    0 0 0 0 0 0 0 10000];
 
-R_aug = 0.001*eye(2);
+R_aug = 0.0001*eye(2);
 
 % N = [0 0 0 0 0 0 0 0;
 %     0 0 0 0 0 0 0 0]';
