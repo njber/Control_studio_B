@@ -14,7 +14,7 @@ closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
 integralaction = 0;    % on:1; off:0
-matlabController = 1; % else use Arduino controller
+matlabController = 0; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
