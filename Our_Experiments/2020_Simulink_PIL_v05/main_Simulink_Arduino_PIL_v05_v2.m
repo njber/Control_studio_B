@@ -160,7 +160,7 @@ wn=-log(sqrt(1-zeta^2))/(zeta*tsettle)
 s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
 
 Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
-Pc = [-0.8 -1 -1.2 -1.4 -1.6 -1.8]*3;
+Pc = [-0.7 -0.71 -1.9 -1.81 -1.82 -1.83]*5;
   
 % Discrete EigenValues
 Pz = exp(Pc*Ts);
@@ -224,7 +224,7 @@ if (rank_OM==n)
    Rf=eye(2);
    Rf=[31.5429 0;
        0 1.2617e-6];
-   Qf=0.005*eye(6);
+   Qf=0.0005*eye(6);
    [Pf,po_dt,Kf_t] = dare(A',C',Qf,Rf,[],[]);
    
    if (obs == 2)
