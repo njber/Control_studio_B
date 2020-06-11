@@ -12,8 +12,8 @@ noise = 0;            % Aplies +-10% noise per unit for w =100 and x = 0.02
 linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 3;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
-integralaction = 1;    % on:1; off:0
+controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+integralaction = 0;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -66,12 +66,12 @@ x_gain = 100;
            
                 
 %% Initial Condition
-O1_dot_o = 0;
-O2_dot_o = 0;
+O1_dot_o = 10;
+O2_dot_o = 10;
 x_dot_o = 0;
 O1_o = 0;
 O2_o = 0;
-x_o = 0;
+x_o = 0.005;
 
 zo = [O1_o, O2_o, -x_o]';
 z_hat_o = [O1_dot_o, O2_dot_o, x_dot_o]';
@@ -221,7 +221,7 @@ if (rank_OM==n)
   end
 
   
-   Rf=eye(2);
+   %Rf=eye(2);
    Rf=[31.5429 0;
        0 1.2617e-6];
    Qf=0.0005*eye(6);

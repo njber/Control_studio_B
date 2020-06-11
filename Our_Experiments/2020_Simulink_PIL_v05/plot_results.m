@@ -23,8 +23,8 @@ w1 = x(:,1);
 w2 = x(:,2);
 
 % Input after amplifier
-ug1 = u_gain(:,1);
-ug2 = u_gain(:,2);
+% ug1 = u_gain(:,1);
+% ug2 = u_gain(:,2);
 
 % Input disturbance
 dist1 = dist(:,1);
@@ -35,14 +35,14 @@ if(reference==10)
     y1_p = y_ref(1) * 1.1; % +10%
     y1_m = y_ref(1) * 0.9; % -10%
 
-    y2_p = y_ref(2) * 1.1; % +10%
-    y2_m = y_ref(2) * 0.9; % -10%
+    y2_p = 1000*y_ref(2) * 1.1; % +10%
+    y2_m = 1000*y_ref(2) * 0.9; % -10%
 elseif(reference==5)
     y1_p = y_ref(1) * 1.05; % +5%
     y1_m = y_ref(1) * 0.95; % -5%
 
-    y2_p = y_ref(2) * 1.105; % +5%
-    y2_m = y_ref(2) * 0.95; % -5%
+    y2_p = 1000*y_ref(2) * 1.105; % +5%
+    y2_m = 1000*y_ref(2) * 0.95; % -5%
 end
 
 figure(10)
