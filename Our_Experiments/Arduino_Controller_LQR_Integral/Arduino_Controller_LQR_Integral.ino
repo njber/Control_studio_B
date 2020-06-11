@@ -193,8 +193,12 @@ void Controller() {
   //TODO impliment r here in future
   r = -Ki*q_k;
   //State Feedback Controller
-  u_k = (-F*x_hat + r);
+  u_k = (-F*x_hat) + r;
 
+  u_k(1) = saturate(u_k(0),-10,10);
+  u_k(2) = saturate(u_k(1),-10,10);
+
+  
   //Update estimated states
   x_hat_k = A*x_hat +B*u_k + L*(y_k - C*x_hat);
   
@@ -204,8 +208,9 @@ void Controller() {
   
   // Associate board outputs to system inputs to be applied
 
-  out1 = saturate(u_k(0),-10,10);
+out1 = saturate(u_k(0),-10,10);
   out2 = saturate(u_k(1),-10,10);
+
   // out1 = u_k(0);
   // out2 = u_k(1);
 
