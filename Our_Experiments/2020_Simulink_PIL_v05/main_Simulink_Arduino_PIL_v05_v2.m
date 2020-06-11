@@ -12,7 +12,7 @@ noise = 0;            % Aplies +-10% noise per unit for w =100 and x = 0.02
 linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
 integralaction = 0;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
@@ -55,8 +55,8 @@ umin=[-value,-value]';
 umax=[value,value]';
 
 value2 = 10000;
-xmin=[-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
-xmax=[value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
+xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
+xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
@@ -131,8 +131,8 @@ Q_aug = [0.0086 0 0 0 0 0 0 0;
     0 0 0 2.1372e-05 0 0 0 0;
     0 0 0 0 2.5783e-05 0 0 0;
     0 0 0 0 0 1.0699e-05 0 0;
-    0 0 0 0 0 0 10000 0;
-    0 0 0 0 0 0 0 10000];
+    0 0 0 0 0 0 10 0;
+    0 0 0 0 0 0 0 10];
 
 R_aug = 0.001*eye(2);
 
@@ -173,7 +173,7 @@ end
 % LQR for augmented system
 p3=[-0.8 -1 -1.2 -1.4 -1.6 -1.8 -2 -2.2]*5;
 
-K_aug=dlqr(A_aug,B_aug,Q_aug,R_aug);
+[K_aug,P_aug]=dlqr(A_aug,B_aug,Q_aug,R_aug);
 
 a = [K_aug(1) K_aug(3) K_aug(5) K_aug(7) K_aug(9) K_aug(11)]; % option here to tidy up (Nick)
 b = [K_aug(2) K_aug(4) K_aug(6) K_aug(8) K_aug(10) K_aug(12)];
@@ -238,9 +238,8 @@ end
 %% MPC Design
 n=6;
 m=2;
-[K,P]=dlqr(A,B,Q,R);
-[W,Fm,Phi,Lambda] = MPC_matrices(A,B,Q,R,P,N);
-
+% [K,P]=dlqr(A_aug,B_aug,Q_aug,R);
+[W,Fm,Phi,Lambda] = MPC_matrices(A_aug,B_aug,Q_aug,R,P_aug,N);
 
 if (N<1)
 N=1;
