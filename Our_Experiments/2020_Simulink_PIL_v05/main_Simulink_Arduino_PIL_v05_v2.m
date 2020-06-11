@@ -12,9 +12,9 @@ noise = 0;            % Aplies +-10% noise per unit for w =100 and x = 0.02
 linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
-integralaction = 0;    % on:1; off:0
-matlabController = 0; % else use Arduino controller
+controller = 3;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+integralaction = 1;    % on:1; off:0
+matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
