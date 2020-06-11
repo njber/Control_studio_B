@@ -2,6 +2,11 @@ clc;
 clear;
 simu="Simulink_Arduino_PIL_v05";     % Simulink file name
 
+load('SSDClip.mat')
+A = SSDClip.A;
+B = SSDClip.B;
+C = SSDClip.C;
+
 %% Simulation Settings
 simulate= true;       % True: To simulate
 Tsim = 5;             % Total Simulation length in seconds.                           
@@ -54,7 +59,15 @@ value = 300;
 umin=[-value,-value]';
 umax=[value,value]';
 
-value2 = 10000;
+% Cinv = (C'*C)*C';
+% 
+% ymax = [120 0.03]';
+% ymin = -1*[120 0.03]';
+% 
+% xmin = [(Cinv*ymax)' 100000 100000]; 
+% xmax = [(Cinv*ymax)' 100000 100000];
+
+value2 = 100;
 xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
 xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
@@ -84,10 +97,7 @@ xo_hat=[0 0 0 0 0 0]';                                %Observer initial conditio
 n = 6; %Number of states
 
 % Load in discrete time state space model
-load('SSDClip.mat')
-A = SSDClip.A;
-B = SSDClip.B;
-C = SSDClip.C;
+
 
 % Check Controllability
 CO = ctrb(A,B);
@@ -131,8 +141,8 @@ Q_aug = [0.0086 0 0 0 0 0 0 0;
     0 0 0 2.1372e-05 0 0 0 0;
     0 0 0 0 2.5783e-05 0 0 0;
     0 0 0 0 0 1.0699e-05 0 0;
-    0 0 0 0 0 0 10 0;
-    0 0 0 0 0 0 0 10];
+    0 0 0 0 0 0 100000 0;
+    0 0 0 0 0 0 0 100000];
 
 R_aug = 0.001*eye(2);
 
@@ -187,7 +197,7 @@ Ki=[K_aug(13) K_aug(15);
 Qy=[1 0;
     0 1];
 Q=C'*Qy*C;
-R=0.00001*eye(2);
+R=0.0001*eye(2);
 
 if (controller ==2)
   F=dlqr(A,B,Q,R);
@@ -199,8 +209,8 @@ end
  Nx = -(Ac^-1)*Bc*Nu;
  
    if (controller == 4)
-      y_star(1,1) = y_star(1,1)*3.075
-      y_star(2,1) = y_star(2,1)*1.28
+      y_star(1,1) = y_star(1,1)*3.075;
+      y_star(2,1) = y_star(2,1)*1.28;
    end
 
  uss = Nu*y_star;
