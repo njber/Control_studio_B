@@ -13,7 +13,7 @@ linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
-integralaction = 0;    % on:1; off:0
+integralaction = 1;   % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -41,8 +41,8 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-du1_bias = 0; %DC bias for sinusoidal input
-du2_bias = 0; %DC bias for sinusoidal input
+du1_bias = 1; %DC bias for sinusoidal input
+du2_bias = 5; %DC bias for sinusoidal input
 
 w_noise = 0;
 x_noise = 0;
@@ -66,12 +66,12 @@ x_gain = 100;
            
                 
 %% Initial Condition
-O1_dot_o = 10;
-O2_dot_o = 10;
+O1_dot_o = 0;
+O2_dot_o = 0;
 x_dot_o = 0;
 O1_o = 0;
 O2_o = 0;
-x_o = 0.005;
+x_o = 0;
 
 zo = [O1_o, O2_o, -x_o]';
 z_hat_o = [O1_dot_o, O2_dot_o, x_dot_o]';

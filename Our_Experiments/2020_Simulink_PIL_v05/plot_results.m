@@ -41,18 +41,18 @@ elseif(reference==5)
     y1_p = y_ref(1) * 1.05; % +5%
     y1_m = y_ref(1) * 0.95; % -5%
 
-    y2_p = 1000*y_ref(2) * 1.105; % +5%
+    y2_p = 1000*y_ref(2) * 1.05; % +5%
     y2_m = 1000*y_ref(2) * 0.95; % -5%
 end
 
 figure(10)
 subplot(311)
 plot(time, y_hat1, 'b', time, y_n1, 'c', time,y1,'r', 'LineWidth',1.2)
-legend('$\hat{\omega}$', 'noisy $\omega$', '$\omega$','fontsize',16,'interpreter','latex');
 if(ref==1)
     yline(y1_p,'--')
     yline(y1_m,'--')
 end
+legend('$\hat{\omega}$', 'noisy $\omega$', '+lim', '-lim', '$\omega$','fontsize',16,'interpreter','latex');
 set(gca,'GridLineStyle','--')
 grid
 title('Jockey Wheel Speed')
@@ -60,11 +60,11 @@ ylabel('Speed (rad/s)','fontsize',16,'interpreter','latex')
 
 subplot(312)
 plot(time, y_hat2*1000, 'b', time, y_n2*1000, 'c', time,y2*1000,'r', 'LineWidth',1.2)
-legend('$\hat{x}$', 'noisy $x$', '$x$','fontsize',16,'interpreter','latex');
 if(ref==1)
     yline(y2_p,'--')
     yline(y2_m,'--')
 end
+legend('$\hat{x}$', 'noisy $x$', '$x$', '+lim', '-lim','fontsize',16,'interpreter','latex');
 set(gca,'GridLineStyle','--')
 grid
 title('Tension Arm Displacement')
@@ -77,7 +77,7 @@ title('Control effort')
 legend('$u_1$', '$u_2$','fontsize',16,'interpreter','latex');
 set(gca,'GridLineStyle','--')
 grid
-ylabel('Torque $(N)$','fontsize',16,'interpreter','latex')
+ylabel('Torque $(Nm)$','fontsize',16,'interpreter','latex')
 
 xlabel('Time (s)','fontsize',16,'interpreter','latex')
 
