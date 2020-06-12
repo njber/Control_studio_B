@@ -55,22 +55,22 @@ x_noise = 0;
 %% Input and State Constraints for MPC
 % not required for LQR
 % change these constraints as required
-value = 300;
+value = 14;
 umin=[-value,-value]';
 umax=[value,value]';
 
-Cinv = ((C'*C)^-1)*C';
-%Cinv = C'*((C*C')^-1);
+% Cinv = ((C'*C)^-1)*C';
+% %Cinv = C'*((C*C')^-1);
+% 
+% ymax = [120 0.03]';
+% ymin = -1*[120 0.03]';
+% 
+% xmin = [10*(Cinv*ymin); -100000; -100000]; 
+% xmax = [10*(Cinv*ymax); 100000; 100000];
 
-ymax = [120 0.03]';
-ymin = -1*[120 0.03]';
-
-xmin = [10*(Cinv*ymin); -100000; -100000]; 
-xmax = [10*(Cinv*ymax); 100000; 100000];
-
-% value2 = 1000;
-% xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
-% xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
+value2 = 1000;
+xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
+xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
