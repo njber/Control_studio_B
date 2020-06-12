@@ -48,11 +48,11 @@ end
 figure(10)
 subplot(311)
 plot(time, y_hat1, 'b', time, y_n1, 'c', time,y1,'r', 'LineWidth',1.2)
-legend('$\hat{\omega}$', 'noisy $\omega$', '$\omega$','fontsize',16,'interpreter','latex');
 if(ref==1)
     yline(y1_p,'--')
     yline(y1_m,'--')
 end
+legend('$\hat{\omega}$', 'noisy $\omega$', '$\omega$','+lim','-lim','fontsize',16,'interpreter','latex');
 set(gca,'GridLineStyle','--')
 grid
 title('Jockey Wheel Speed')
@@ -60,11 +60,11 @@ ylabel('Speed (rad/s)','fontsize',16,'interpreter','latex')
 
 subplot(312)
 plot(time, y_hat2*1000, 'b', time, y_n2*1000, 'c', time,y2*1000,'r', 'LineWidth',1.2)
-legend('$\hat{x}$', 'noisy $x$', '$x$','fontsize',16,'interpreter','latex');
 if(ref==1)
     yline(y2_p,'--')
     yline(y2_m,'--')
 end
+legend('$\hat{x}$', 'noisy $x$', '$x$','+lim','-lim','fontsize',16,'interpreter','latex');
 set(gca,'GridLineStyle','--')
 grid
 title('Tension Arm Displacement')
