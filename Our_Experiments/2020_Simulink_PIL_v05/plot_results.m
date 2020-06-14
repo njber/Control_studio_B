@@ -70,19 +70,16 @@ figure('Position', 1.4*[0, 0, 800, 600])
 sgtitle(Controller_str)
 subplot(311)
 hold on
-
+if(ref==1)
+    yline(y1_p,'--')
+    yline(y1_m,'--')
+    yline(y1_r,'LineWidth',0.8)
+end
 p1 = plot(time, y_hat1, 'b');
 if(noise==1)
     p2 = plot(time, y_n1, 'c');
 end
 p3 = plot(time,y1,'r', 'LineWidth',1.2);
-
-if(ref==1)
-    yline(y1_p,'--')
-    yline(y1_m,'--')
-    yline(y1_r,'g')
-end
-
 
 set(gca,'GridLineStyle','--')
 grid
@@ -101,16 +98,17 @@ end
 subplot(312)
 
 hold on
+if(ref==1)
+    yline(y2_p,'--')
+    yline(y2_m,'--')
+    yline(y2_r,'LineWidth',0.8)
+end
 p1 = plot(time, y_hat2*1000, 'b');
 if(noise==1)
     p2 = plot(time, y_n2*1000, 'c');
 end
 p3 = plot(time,y2*1000,'r', 'LineWidth',1.2);
-if(ref==1)
-    yline(y2_p,'--')
-    yline(y2_m,'--')
-    yline(y2_r,'g')
-end
+
 set(gca,'GridLineStyle','--')
 grid
 title('Tension Arm Displacement')
