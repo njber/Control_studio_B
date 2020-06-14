@@ -273,12 +273,12 @@ aN=[INm;
 %% Design SMC
 % Desing surface Cs and switching gain gamma
 
-Cs1=[41 0 0 0 0 0.1];
+Cs1=[100 0 0 0 0 0];
 Cs2=[0 0 0 10 0 0];
 Cs=[Cs1;
     Cs2];
 CsRank = rank(Cs)
-gamma=0.01;
+gamma=0.00000001;
 Keq=(Cs*B)^-1 * Cs*A;
 Ksw=gamma*(Cs*B)^1;
 
