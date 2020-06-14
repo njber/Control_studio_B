@@ -181,11 +181,11 @@ void Controller() {
 //  x_k(4)=in3;
 //  x_k(5)=in4;
   // Go off just the outputs
-  y_k(0) = in1; // pully speed
-  y_k(1) = in2; // tension
+  x_k(0) = in1; // pully speed
+  x_k(1) = in2; // tension
 
-  y_k(0) = y_k(0) * 100;
-  y_k(1) = y_k(1) / 100;
+  x_k(0) = x_k(0) * 100;
+  x_k(1) = x_k(1) / 100; 
 
   x_hat = x_hat_k;
   
@@ -195,8 +195,8 @@ void Controller() {
   //State Feedback Controller
   u_k = (-F*x_hat) + r;
 
-  u_k(1) = saturate(u_k(0),-10,10);
-  u_k(2) = saturate(u_k(1),-10,10);
+ // u_k(1) = saturate(u_k(0),-10,10);
+ // u_k(2) = saturate(u_k(1),-10,10);
 
   
   //Update estimated states
