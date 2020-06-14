@@ -11,7 +11,7 @@ y_n2 = noisy_y(:,2);
 
 %Estimator states (In terms of output only)
 y_hat1 = y_hat(:,1);
-y_hat2 = y_hat(:,2)
+y_hat2 = y_hat(:,2);
 
 %Sensor and Controller Voltages
 u_v1 = u_v(:,1);
@@ -32,43 +32,99 @@ dist2 = dist(:,2);
 
 
 if(reference==10)
+    y1_r = y_ref(1);
     y1_p = y_ref(1) * 1.1; % +10%
     y1_m = y_ref(1) * 0.9; % -10%
 
+    y2_r = 1000*y_ref(2);
     y2_p = 1000*y_ref(2) * 1.1; % +10%
     y2_m = 1000*y_ref(2) * 0.9; % -10%
 elseif(reference==5)
+    y1_r = y_ref(1);
     y1_p = y_ref(1) * 1.05; % +5%
     y1_m = y_ref(1) * 0.95; % -5%
 
+    y2_r = 1000*y_ref(2);
     y2_p = 1000*y_ref(2) * 1.05; % +5%
     y2_m = 1000*y_ref(2) * 0.95; % -5%
 end
 
-figure(10)
+switch(controller)
+    case 1
+        Title='SFC';
+    case 2
+        Title='LQR';
+    case 3
+        Title='SMC';
+    case 4
+        Title='MPC';
+end
+
+if(integralaction==1)
+    Title = append(Title, ' with integral action');
+end
+
+Controller_str = {Title};
+
+figure('Position', 1.4*[0, 0, 800, 600])
+sgtitle(Controller_str)
 subplot(311)
-plot(time, y_hat1, 'b', time, y_n1, 'c', time,y1,'r', 'LineWidth',1.2)
+hold on
+
+p1 = plot(time, y_hat1, 'b');
+if(noise==1)
+    p2 = plot(time, y_n1, 'c');
+end
+p3 = plot(time,y1,'r', 'LineWidth',1.2);
+
 if(ref==1)
     yline(y1_p,'--')
     yline(y1_m,'--')
+    yline(y1_r,'g')
 end
-legend('$\hat{\omega}$', 'noisy $\omega$', '+lim', '-lim', '$\omega$','fontsize',16,'interpreter','latex');
+
+
 set(gca,'GridLineStyle','--')
 grid
 title('Jockey Wheel Speed')
 ylabel('Speed (rad/s)','fontsize',16,'interpreter','latex')
+hold off
+% strr = {'$\hat{\omega}$', 'noisy $\omega$' '$\omega$','fontsize',16,'interpreter','latex'};
+if(noise==1)
+    strr = {'$\hat{\omega}$', 'noisy $\omega$' '$\omega$'};
+    legend([p1 p2 p3], strr, 'fontsize',16,'interpreter','latex');
+else
+    strr = {'$\hat{\omega}$', '$\omega$'};
+    legend([p1 p3], strr, 'fontsize',16,'interpreter','latex');
+end
 
 subplot(312)
-plot(time, y_hat2*1000, 'b', time, y_n2*1000, 'c', time,y2*1000,'r', 'LineWidth',1.2)
+
+hold on
+p1 = plot(time, y_hat2*1000, 'b');
+if(noise==1)
+    p2 = plot(time, y_n2*1000, 'c');
+end
+p3 = plot(time,y2*1000,'r', 'LineWidth',1.2);
 if(ref==1)
     yline(y2_p,'--')
     yline(y2_m,'--')
+    yline(y2_r,'g')
 end
-legend('$\hat{x}$', 'noisy $x$', '$x$', '+lim', '-lim','fontsize',16,'interpreter','latex');
 set(gca,'GridLineStyle','--')
 grid
 title('Tension Arm Displacement')
 ylabel('Displacement $(mm)$','fontsize',16,'interpreter','latex')
+hold off
+if(noise==1)
+    strr = {'$\hat{x}$', 'noisy $x$', '$x$'};
+    legend([p1 p2 p3], strr, 'fontsize',16,'interpreter','latex');
+else
+    strr = {'$\hat{\omega}$','$x$'};
+    legend([p1 p3], strr, 'fontsize',16,'interpreter','latex');
+end
+% legend('$\hat{x}$', 'noisy $x$', '$x$', '+lim', '-lim','fontsize',16,'interpreter','latex');
+
 
 subplot(313)
 plot(time,u1,'b', time, u2, 'r', 'LineWidth',1.2)
@@ -82,7 +138,8 @@ ylabel('Torque $(Nm)$','fontsize',16,'interpreter','latex')
 xlabel('Time (s)','fontsize',16,'interpreter','latex')
 
 %% Plot Voltage ranges
-figure(12)
+figure('Position', 1.4*[0, 0, 800, 600])
+sgtitle(Controller_str)
 subplot(211)
 plot(time, u_v1, 'r', time, u_v2, 'b','LineWidth',1.2);
 legend('$u_1$', '$u_2$','fontsize',16,'interpreter','latex');

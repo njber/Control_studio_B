@@ -154,12 +154,12 @@ R_aug = 0.001*eye(2);
 os = 0.3;
 tsettle = 5;
 zeta = 0.707; %log(os/100)\(sqrt(pi^2+log(os/100)^2))
-wn=-log(sqrt(1-zeta^2))/(zeta*tsettle)
+wn=-log(sqrt(1-zeta^2))/(zeta*tsettle);
 
 % Dominant second order poles
-s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)]
+s_poles = [-zeta*wn+wn*sqrt(zeta^2-1),-zeta*wn-wn*sqrt(zeta^2-1)];
 
-Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))]
+Pc = [s_poles(1) conj(s_poles(1)) 4*real(s_poles(1)) 4.2*real(s_poles(1)) 4.4*real(s_poles(1)) 4.6*real(s_poles(1))];
 Pc = [-0.7 -0.71 -1.9 -1.81 -1.82 -1.83]*5;
   
 % Discrete EigenValues
@@ -199,8 +199,8 @@ end
  Nx = -(Ac^-1)*Bc*Nu;
  
    if (controller == 4)
-      y_star(1,1) = y_star(1,1)*3.075
-      y_star(2,1) = y_star(2,1)*1.28
+      y_star(1,1) = y_star(1,1)*3.075;
+      y_star(2,1) = y_star(2,1)*1.28;
    end
 
  uss = Nu*y_star;
@@ -277,7 +277,7 @@ Cs1=[41 0 0 0 0 0.1];
 Cs2=[0 0 0 10 0 0];
 Cs=[Cs1;
     Cs2];
-CsRank = rank(Cs)
+CsRank = rank(Cs);
 gamma=0.01;
 Keq=(Cs*B)^-1 * Cs*A;
 Ksw=gamma*(Cs*B)^1;
