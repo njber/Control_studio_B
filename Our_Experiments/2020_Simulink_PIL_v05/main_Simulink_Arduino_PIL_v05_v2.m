@@ -41,8 +41,10 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-du1_bias = 1; %DC bias for sinusoidal input
-du2_bias = 5; %DC bias for sinusoidal input
+du1_bias = 0; %DC bias for sinusoidal input
+du2_bias = 4.5; %DC bias for sinusoidal input
+
+const_noise = 0;
 
 w_noise = 0;
 x_noise = 0;
@@ -125,7 +127,9 @@ C_aug = [C O_C];
 Qy_aug=[0.1 0;
     0 1];
 
-Q_aug = [0.0086 0 0 0 0 0 0 0;
+
+
+Q_aug = 0.01*[0.0086 0 0 0 0 0 0 0;
     0 0.0349 0 0 0 0 0 0;
     0 0 9.4695e-04 0 0 0 0 0;
     0 0 0 2.1372e-05 0 0 0 0;
@@ -134,7 +138,16 @@ Q_aug = [0.0086 0 0 0 0 0 0 0;
     0 0 0 0 0 0 10000 0;
     0 0 0 0 0 0 0 10000];
 
-R_aug = 0.001*eye(2);
+% Q_aug = 0.0000001*[0.0086 0 0 0 0 0 0 0; %original
+%     0 0.0349 0 0 0 0 0 0;
+%     0 0 9.4695e-04 0 0 0 0 0;
+%     0 0 0 2.1372e-05 0 0 0 0;
+%     0 0 0 0 2.5783e-05 0 0 0;
+%     0 0 0 0 0 1.0699e-05 0 0;
+%     0 0 0 0 0 0 1 0;
+%     0 0 0 0 0 0 0 1];
+
+R_aug = 0.001*eye(2); % original
 
 % N = [0 0 0 0 0 0 0 0;
 %     0 0 0 0 0 0 0 0]';
@@ -199,8 +212,8 @@ end
  Nx = -(Ac^-1)*Bc*Nu;
  
    if (controller == 4)
-      y_star(1,1) = y_star(1,1)*3.075
-      y_star(2,1) = y_star(2,1)*1.28
+      y_star(1,1) = y_star(1,1)*3.075;
+      y_star(2,1) = y_star(2,1)*1.28;
    end
 
  uss = Nu*y_star;
