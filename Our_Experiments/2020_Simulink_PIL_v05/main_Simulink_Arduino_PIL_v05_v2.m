@@ -18,14 +18,14 @@ linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
-integralaction = 0;    % on:1; off:0
+integralaction = 1;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
                       %   from the beginning of the simulation
                       
-N = 10;                      
+N = 30;                      
                       
 % Set reference
 y_star = [100 0.02]';
@@ -46,8 +46,8 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-du1_bias = 0; %DC bias for sinusoidal input
-du2_bias = 0; %DC bias for sinusoidal input
+du1_bias = 5; %DC bias for sinusoidal input
+du2_bias = 5; %DC bias for sinusoidal input
 
 w_noise = 0;
 x_noise = 0;
@@ -55,20 +55,11 @@ x_noise = 0;
 %% Input and State Constraints for MPC
 % not required for LQR
 % change these constraints as required
-value = 14;
+value = 15;
 umin=[-value,-value]';
 umax=[value,value]';
 
-% Cinv = ((C'*C)^-1)*C';
-% %Cinv = C'*((C*C')^-1);
-% 
-% ymax = [120 0.03]';
-% ymin = -1*[120 0.03]';
-% 
-% xmin = [10*(Cinv*ymin); -100000; -100000]; 
-% xmax = [10*(Cinv*ymax); 100000; 100000];
-
-value2 = 1000;
+value2 = 10000;
 xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
 xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
@@ -295,11 +286,6 @@ Ksw=gamma*(Cs*B)^1;
 if(controller == 3)
     F=dlqr(A,B,Q,R);
 end
-
-
-
-
-
 
 
 %% Start Simulation
