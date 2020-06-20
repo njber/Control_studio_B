@@ -18,7 +18,7 @@ linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
-integralaction = 0;    % on:1; off:0
+integralaction = 1;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -59,9 +59,22 @@ value = 20;
 umin=[-value,-value]';
 umax=[value,value]';
 
+y_c_ref = [130;
+    0.04];
+X_map = [0.7720   34.9910;
+   -1.2881   16.4468;
+    0.2087   -3.6284;
+   -0.0419   -4.1974;
+   -0.0403   -1.1446;
+   -0.0296   -3.1044];
+
+xmax = [(X_map*y_c_ref)'];
+xmin = -(X_map*y_c_ref)';
 value2 = 10000;
-xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
-xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
+% xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
+% xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
+
+
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
