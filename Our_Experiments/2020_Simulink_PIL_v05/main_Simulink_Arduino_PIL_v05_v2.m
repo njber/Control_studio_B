@@ -18,7 +18,7 @@ linear = 0;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
 controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
-integralaction = 1;    % on:1; off:0
+integralaction = 0;    % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
@@ -46,8 +46,8 @@ du_offset1 = pi/2;
 du_freq2 = 10*pi;
 du_offset2 = 0;
 
-du1_bias = 5; %DC bias for sinusoidal input
-du2_bias = 5; %DC bias for sinusoidal input
+du1_bias = 0; %DC bias for sinusoidal input
+du2_bias = 0; %DC bias for sinusoidal input
 
 w_noise = 0;
 x_noise = 0;
@@ -55,7 +55,7 @@ x_noise = 0;
 %% Input and State Constraints for MPC
 % not required for LQR
 % change these constraints as required
-value = 15;
+value = 20;
 umin=[-value,-value]';
 umax=[value,value]';
 
