@@ -55,25 +55,29 @@ x_noise = 0;
 %% Input and State Constraints for MPC
 % not required for LQR
 % change these constraints as required
-value = 20;
+value = 50000;
 umin=[-value,-value]';
 umax=[value,value]';
 
-y_c_ref = [130;
-    0.04];
+%       y_star(1,1) = y_star(1,1)*3.075
+%       y_star(2,1) = y_star(2,1)*1.28
+
+y_c_ref = [4020; %406 lim
+    10000];
 X_map = [0.7720   34.9910;
    -1.2881   16.4468;
     0.2087   -3.6284;
    -0.0419   -4.1974;
    -0.0403   -1.1446;
-   -0.0296   -3.1044];
+   -0.0296   -3.1044;];
 
-xmax = [(X_map*y_c_ref)'];
-xmin = -(X_map*y_c_ref)';
+% xmax = [(X_map*y_c_ref);10000;10000];
+% xmin = -(X_map*y_c_ref);
+
+
 value2 = 10000;
-% xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
-% xmax=[value2;value2;value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
-
+xmin=[-value2;-value2;-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
+xmax=[value2;value2;value2;value2;value2;value2;value2;value2];
 
 
 %% Model Constant Parameters
