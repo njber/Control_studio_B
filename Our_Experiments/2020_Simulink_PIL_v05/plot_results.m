@@ -118,7 +118,7 @@ if(noise==1)
     strr = {'$\hat{x}$', 'noisy $x$', '$x$'};
     legend([p1 p2 p3], strr, 'fontsize',16,'interpreter','latex');
 else
-    strr = {'$\hat{x}$','$x$'};
+    strr = {'$\hat{\omega}$','$x$'};
     legend([p1 p3], strr, 'fontsize',16,'interpreter','latex');
 end
 % legend('$\hat{x}$', 'noisy $x$', '$x$', '+lim', '-lim','fontsize',16,'interpreter','latex');

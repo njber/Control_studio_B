@@ -9,21 +9,21 @@ fs=100;               % Sampling Frequency in Hz
 Ts=1/fs;              % Sampling Period
 
 noise = 0;            % Aplies +-10% noise per unit for w =100 and x = 0.02
-linear = 0;           % Plant selection
+linear = 1;           % Plant selection
 closedloop = 1;       % Open/closed loop selection
 obs = 2;              % No observer: 0, Luenberger: 1, Kalman: 2
-controller = 2;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
-integralaction = 1;   % on:1; off:0
+controller = 4;       % SFC: 1, LQR: 2, SMC: 3, MPC:4
+integralaction = 0;   % on:1; off:0
 matlabController = 1; % else use Arduino controller
 PIL=1;                %0: Manually start the PIL controller 
                       %   after simulation started
                       %1: Automatically start PIL controller 
                       %   from the beginning of the simulation
                       
-N = 10;                      
+N = 30;                      
                       
 % Set reference
-y_star = [100 0.02]';
+y_star = [120 0.02]';
 y_ref = [y_star(1) y_star(2)]';
 
 F = zeros(2,6);
@@ -42,9 +42,7 @@ du_freq2 = 10*pi;
 du_offset2 = 0;
 
 du1_bias = 0; %DC bias for sinusoidal input
-du2_bias = 4.5; %DC bias for sinusoidal input
-
-const_noise = 0;
+du2_bias = 0; %DC bias for sinusoidal input
 
 w_noise = 0;
 x_noise = 0;
@@ -52,13 +50,29 @@ x_noise = 0;
 %% Input and State Constraints for MPC
 % not required for LQR
 % change these constraints as required
-value = 300;
+value = 50;
 umin=[-value,-value]';
 umax=[value,value]';
 
+%       y_star(1,1) = y_star(1,1)*3.075
+%       y_star(2,1) = y_star(2,1)*1.28
+
+y_c_ref = [130*3.075;
+    0.023*1.28];
+X_map = [0.7720   34.9910;
+   -1.2881   16.4468;
+    0.2087   -3.6284;
+   -0.0419   -4.1974;
+   -0.0403   -1.1446;
+   -0.0296   -3.1044];
+
+xmax = (X_map*y_c_ref);
+% xmin = -(X_map*y_c_ref);
+
+
 value2 = 10000;
 xmin=[-value2;-value2;-value2;-value2;-value2;-value2];    %Large number implies no constraint
-xmax=[value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
+% xmax=[value2;value2;value2;value2;value2;value2];       %Large number implies no constraint
 
 %% Model Constant Parameters
 % Most parameters declared in Non-linear Plant in Simulink
@@ -127,9 +141,7 @@ C_aug = [C O_C];
 Qy_aug=[0.1 0;
     0 1];
 
-
-
-Q_aug = 0.01*[0.0086 0 0 0 0 0 0 0;
+Q_aug = [0.0086 0 0 0 0 0 0 0;
     0 0.0349 0 0 0 0 0 0;
     0 0 9.4695e-04 0 0 0 0 0;
     0 0 0 2.1372e-05 0 0 0 0;
@@ -138,16 +150,7 @@ Q_aug = 0.01*[0.0086 0 0 0 0 0 0 0;
     0 0 0 0 0 0 10000 0;
     0 0 0 0 0 0 0 10000];
 
-% Q_aug = 0.0000001*[0.0086 0 0 0 0 0 0 0; %original
-%     0 0.0349 0 0 0 0 0 0;
-%     0 0 9.4695e-04 0 0 0 0 0;
-%     0 0 0 2.1372e-05 0 0 0 0;
-%     0 0 0 0 2.5783e-05 0 0 0;
-%     0 0 0 0 0 1.0699e-05 0 0;
-%     0 0 0 0 0 0 1 0;
-%     0 0 0 0 0 0 0 1];
-
-R_aug = 0.001*eye(2); % original
+R_aug = 0.001*eye(2);
 
 % N = [0 0 0 0 0 0 0 0;
 %     0 0 0 0 0 0 0 0]';
@@ -212,8 +215,8 @@ end
  Nx = -(Ac^-1)*Bc*Nu;
  
    if (controller == 4)
-      y_star(1,1) = y_star(1,1)*3.075;
-      y_star(2,1) = y_star(2,1)*1.28;
+      y_star(1,1) = y_star(1,1)*3.075
+      y_star(2,1) = y_star(2,1)*1.28
    end
 
  uss = Nu*y_star;
